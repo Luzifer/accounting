@@ -1,13 +1,41 @@
 package database
 
-import "github.com/google/uuid"
+import (
+	"fmt"
+	"math"
+	"strconv"
 
-const constAcctIDNamespace = "17de217e-94d7-4a9b-8833-ecca7f0eb6ca"
+	"github.com/google/uuid"
+)
+
+const constAcctIDNamespace = "00000000-0000-0000-0000-%012s"
 
 var (
 	// UnallocatedMoney is a category UUID which is automatically created
 	// during database migration phase and therefore always available
-	UnallocatedMoney = uuid.NewSHA1(uuid.MustParse(constAcctIDNamespace), []byte("unallocated-money"))
+	UnallocatedMoney = makeConstAcctID(1)
+	// StartingBalance is a category UUID which is automatically created
+	// and hidden during database migration and used in frontend as constant
+	StartingBalance = makeConstAcctID(2) //nolint:gomnd
 
-	invalidAcc = uuid.NewSHA1(uuid.MustParse(constAcctIDNamespace), []byte("INVALID ACCOUNT"))
+	invalidAcc = makeConstAcctID(math.MaxUint32)
+
+	migrateCreateAccounts = []Account{
+		{
+			BaseModel: BaseModel{ID: UnallocatedMoney},
+			Hidden:    false,
+			Name:      "Unallocated Money",
+			Type:      AccountTypeCategory,
+		},
+		{
+			BaseModel: BaseModel{ID: StartingBalance},
+			Hidden:    true,
+			Name:      "Starting Balance",
+			Type:      AccountTypeCategory,
+		},
+	}
 )
+
+func makeConstAcctID(fixedNumber uint32) uuid.UUID {
+	return uuid.MustParse(fmt.Sprintf(constAcctIDNamespace, strconv.FormatUint(uint64(fixedNumber), 16)))
+}

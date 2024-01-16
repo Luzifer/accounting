@@ -43,29 +43,29 @@ func TestAccountManagement(t *testing.T) {
 	assert.Equal(t, "test", act.Name)
 
 	// List all accounts
-	accs, err := dbc.ListAccounts()
+	accs, err := dbc.ListAccounts(false)
 	assert.NoError(t, err)
 	assert.Len(t, accs, 2)
 
 	// Hide account and list again
 	assert.NoError(t, dbc.UpdateAccountHidden(actID, true))
-	accs, err = dbc.ListAccounts()
+	accs, err = dbc.ListAccounts(false)
 	assert.NoError(t, err)
 	assert.Len(t, accs, 1)
 
 	// Unhide account and list again
 	assert.NoError(t, dbc.UpdateAccountHidden(actID, false))
-	accs, err = dbc.ListAccounts()
+	accs, err = dbc.ListAccounts(false)
 	assert.NoError(t, err)
 	assert.Len(t, accs, 2)
 
 	// List accounts from other type
-	accs, err = dbc.ListAccountsByType(AccountTypeCategory)
+	accs, err = dbc.ListAccountsByType(AccountTypeCategory, false)
 	assert.NoError(t, err)
 	assert.Len(t, accs, 1)
 
 	// List accounts from existing type
-	accs, err = dbc.ListAccountsByType(AccountTypeBudget)
+	accs, err = dbc.ListAccountsByType(AccountTypeBudget, false)
 	assert.NoError(t, err)
 	assert.Len(t, accs, 1)
 
@@ -128,7 +128,7 @@ func TestTransactions(t *testing.T) {
 	assert.NotEqual(t, uuid.Nil, tx.ID)
 
 	// Now we should have money…
-	bals, err := dbc.ListAccountBalances()
+	bals, err := dbc.ListAccountBalances(false)
 	require.NoError(t, err)
 	checkAcctBal(bals, tb1.ID, 1000)
 	checkAcctBal(bals, tb2.ID, 0)
@@ -138,7 +138,7 @@ func TestTransactions(t *testing.T) {
 
 	// Lets redistribute the money
 	require.NoError(t, dbc.TransferMoney(UnallocatedMoney, tc.ID, 500))
-	bals, err = dbc.ListAccountBalances()
+	bals, err = dbc.ListAccountBalances(false)
 	require.NoError(t, err)
 	checkAcctBal(bals, tb1.ID, 1000)
 	checkAcctBal(bals, tb2.ID, 0)
@@ -148,7 +148,7 @@ func TestTransactions(t *testing.T) {
 
 	// Now transfer some money to another budget account
 	require.NoError(t, dbc.TransferMoney(tb1.ID, tb2.ID, 100))
-	bals, err = dbc.ListAccountBalances()
+	bals, err = dbc.ListAccountBalances(false)
 	require.NoError(t, err)
 	checkAcctBal(bals, tb1.ID, 900)
 	checkAcctBal(bals, tb2.ID, 100)
@@ -158,7 +158,7 @@ func TestTransactions(t *testing.T) {
 
 	// And some to a tracking account (needs category)
 	require.NoError(t, dbc.TransferMoneyWithCategory(tb1.ID, tt.ID, 100, tc.ID))
-	bals, err = dbc.ListAccountBalances()
+	bals, err = dbc.ListAccountBalances(false)
 	require.NoError(t, err)
 	checkAcctBal(bals, tb1.ID, 800)
 	checkAcctBal(bals, tb2.ID, 100)
@@ -178,7 +178,7 @@ func TestTransactions(t *testing.T) {
 	})
 	require.NoError(t, err)
 	assert.False(t, lltx.Cleared)
-	bals, err = dbc.ListAccountBalances()
+	bals, err = dbc.ListAccountBalances(false)
 	require.NoError(t, err)
 	checkAcctBal(bals, tb1.ID, 700)
 	checkAcctBal(bals, tb2.ID, 100)
@@ -197,7 +197,7 @@ func TestTransactions(t *testing.T) {
 
 	// Oh, wrong category
 	require.NoError(t, dbc.UpdateTransactionCategory(lltx.ID, UnallocatedMoney))
-	bals, err = dbc.ListAccountBalances()
+	bals, err = dbc.ListAccountBalances(false)
 	require.NoError(t, err)
 	checkAcctBal(bals, tb1.ID, 700)
 	checkAcctBal(bals, tb2.ID, 100)
@@ -219,7 +219,7 @@ func TestTransactions(t *testing.T) {
 
 	// We made an error and didn't pay the landlord
 	require.NoError(t, dbc.DeleteTransaction(lltx.ID))
-	bals, err = dbc.ListAccountBalances()
+	bals, err = dbc.ListAccountBalances(false)
 	require.NoError(t, err)
 	checkAcctBal(bals, tb1.ID, 800)
 	checkAcctBal(bals, tb2.ID, 100)

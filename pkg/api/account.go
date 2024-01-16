@@ -45,7 +45,7 @@ func (a apiServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, u.String(), http.StatusTemporaryRedirect)
+	http.Redirect(w, r, u.String(), http.StatusFound)
 }
 
 func (a apiServer) handleGetAccount(w http.ResponseWriter, r *http.Request) {
@@ -69,9 +69,12 @@ func (a apiServer) handleGetAccount(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a apiServer) handleListAccounts(w http.ResponseWriter, r *http.Request) {
-	var payload any
+	var (
+		payload    any
+		showHidden = r.URL.Query().Has("with-hidden")
+	)
 	if r.URL.Query().Has("with-balances") {
-		accs, err := a.dbc.ListAccountBalances()
+		accs, err := a.dbc.ListAccountBalances(showHidden)
 		if err != nil {
 			a.errorResponse(w, err, "getting account balances", http.StatusInternalServerError)
 			return
@@ -80,14 +83,14 @@ func (a apiServer) handleListAccounts(w http.ResponseWriter, r *http.Request) {
 	} else {
 		at := database.AccountType(r.URL.Query().Get("account-type"))
 		if at.IsValid() {
-			accs, err := a.dbc.ListAccountsByType(at)
+			accs, err := a.dbc.ListAccountsByType(at, showHidden)
 			if err != nil {
 				a.errorResponse(w, err, "getting accounts", http.StatusInternalServerError)
 				return
 			}
 			payload = accs
 		} else {
-			accs, err := a.dbc.ListAccounts()
+			accs, err := a.dbc.ListAccounts(showHidden)
 			if err != nil {
 				a.errorResponse(w, err, "getting accounts", http.StatusInternalServerError)
 				return
@@ -116,7 +119,7 @@ func (a apiServer) handleTransferMoney(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if amount, err = strconv.ParseFloat(mux.Vars(r)["to"], 64); err != nil {
+	if amount, err = strconv.ParseFloat(r.URL.Query().Get("amount"), 64); err != nil {
 		a.errorResponse(w, err, "parsing amount", http.StatusBadRequest)
 		return
 	}

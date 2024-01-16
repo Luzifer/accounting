@@ -37,7 +37,7 @@ func (a apiServer) handleCreateTransaction(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	http.Redirect(w, r, u.String(), http.StatusTemporaryRedirect)
+	http.Redirect(w, r, u.String(), http.StatusFound)
 }
 
 func (a apiServer) handleDeleteTransaction(w http.ResponseWriter, r *http.Request) {

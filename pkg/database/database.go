@@ -60,15 +60,11 @@ func New(dbtype, dsn string) (*Client, error) {
 		return nil, fmt.Errorf("migrating database schema: %w", err)
 	}
 
-	if err = db.Save(&Account{
-		BaseModel: BaseModel{
-			ID: UnallocatedMoney,
-		},
-		Name:   "Unallocated Money",
-		Type:   AccountTypeCategory,
-		Hidden: false,
-	}).Error; err != nil {
-		return nil, fmt.Errorf("ensuring unallocated money category: %w", err)
+	for i := range migrateCreateAccounts {
+		a := migrateCreateAccounts[i]
+		if err = db.Save(&a).Error; err != nil {
+			return nil, fmt.Errorf("ensuring default account %q: %w", a.Name, err)
+		}
 	}
 
 	return &Client{
@@ -146,8 +142,8 @@ func (c *Client) GetTransactionByID(id uuid.UUID) (tx Transaction, err error) {
 
 // ListAccountBalances returns a list of accounts with their
 // corresponding balance
-func (c *Client) ListAccountBalances() (a []AccountBalance, err error) {
-	accs, err := c.ListAccounts()
+func (c *Client) ListAccountBalances(showHidden bool) (a []AccountBalance, err error) {
+	accs, err := c.ListAccounts(showHidden)
 	if err != nil {
 		return nil, fmt.Errorf("listing accounts: %w", err)
 	}
@@ -191,9 +187,17 @@ func (c *Client) ListAccountBalances() (a []AccountBalance, err error) {
 }
 
 // ListAccounts returns a list of all accounts
-func (c *Client) ListAccounts() (a []Account, err error) {
+//
+//revive:disable-next-line:flag-parameter
+func (c *Client) ListAccounts(showHidden bool) (a []Account, err error) {
 	if err = c.retryRead(func(db *gorm.DB) error {
-		return db.Find(&a, "hidden = ?", false).Error
+		q := db.Model(&Account{})
+
+		if !showHidden {
+			q = q.Where("hidden = ?", false)
+		}
+
+		return q.Find(&a).Error
 	}); err != nil {
 		return a, fmt.Errorf("listing accounts: %w", err)
 	}
@@ -202,9 +206,17 @@ func (c *Client) ListAccounts() (a []Account, err error) {
 }
 
 // ListAccountsByType returns a list of all accounts of the given type
-func (c *Client) ListAccountsByType(at AccountType) (a []Account, err error) {
+//
+//revive:disable-next-line:flag-parameter
+func (c *Client) ListAccountsByType(at AccountType, showHidden bool) (a []Account, err error) {
 	if err = c.retryRead(func(db *gorm.DB) error {
-		return db.Find(&a, "type = ?", at).Error
+		q := db.Where("type = ?", at)
+
+		if !showHidden {
+			q = q.Where("hidden = ?", false)
+		}
+
+		return q.Find(&a).Error
 	}); err != nil {
 		return a, fmt.Errorf("listing accounts: %w", err)
 	}

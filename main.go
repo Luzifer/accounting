@@ -7,6 +7,7 @@ import (
 
 	"git.luzifer.io/luzifer/accounting/pkg/api"
 	"git.luzifer.io/luzifer/accounting/pkg/database"
+	"git.luzifer.io/luzifer/accounting/pkg/frontend"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -60,6 +61,7 @@ func main() {
 
 	router := mux.NewRouter()
 	api.RegisterHandler(router.PathPrefix("/api").Subrouter(), dbc, logrus.StandardLogger())
+	frontend.RegisterHandler(router, logrus.StandardLogger())
 
 	var hdl http.Handler = router
 	hdl = httpHelper.GzipHandler(hdl)

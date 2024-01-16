@@ -1,0 +1,10 @@
+// Force local fonts
+$web-font-path: '';
+
+@import "../node_modules/bootstrap/dist/css/bootstrap.css";
+@import "lato";
+
+$fa-font-path: "../node_modules/@fortawesome/fontawesome-pro/webfonts";
+@import "../node_modules/@fortawesome/fontawesome-pro/scss/fontawesome.scss";
+@import "../node_modules/@fortawesome/fontawesome-pro/scss/solid.scss";
+@import "../node_modules/@fortawesome/fontawesome-pro/scss/brands.scss";
