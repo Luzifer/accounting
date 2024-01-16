@@ -226,10 +226,10 @@ func (c *Client) ListAccountsByType(at AccountType, showHidden bool) (a []Accoun
 
 // ListTransactionsByAccount retrieves all transactions for an account
 // or category
-func (c *Client) ListTransactionsByAccount(acc uuid.UUID, since time.Time) (txs []Transaction, err error) {
+func (c *Client) ListTransactionsByAccount(acc uuid.UUID, since, until time.Time) (txs []Transaction, err error) {
 	if err = c.retryRead(func(db *gorm.DB) error {
 		return db.
-			Where("time >= ?", since).
+			Where("time >= ? and time <= ?", since, until).
 			Find(&txs, "account = ? OR category = ?", acc, acc).
 			Error
 	}); err != nil {

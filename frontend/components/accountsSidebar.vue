@@ -168,7 +168,7 @@
 <script>
 import { Modal } from 'bootstrap'
 
-const startingBalanceAcc = '00000000-0000-0000-0000-000000000002'
+import { unallocatedMoneyAcc } from '../constants'
 
 export default {
   computed: {
@@ -224,7 +224,7 @@ export default {
               body: JSON.stringify({
                 account: account.id,
                 amount: this.modals.addAccount.startingBalance,
-                category: startingBalanceAcc,
+                category: unallocatedMoneyAcc,
                 cleared: true,
                 description: 'Starting Balance',
                 time: new Date(),
@@ -249,7 +249,7 @@ export default {
               method: 'POST',
             })
           } else if (account.type === 'category') {
-            return fetch(`/api/accounts/${startingBalanceAcc}/transfer/${account.id}?amount=${this.modals.addAccount.startingBalance}`, {
+            return fetch(`/api/accounts/${unallocatedMoneyAcc}/transfer/${account.id}?amount=${this.modals.addAccount.startingBalance}`, {
               method: 'PUT',
             })
           }

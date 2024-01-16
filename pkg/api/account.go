@@ -136,11 +136,11 @@ func (a apiServer) handleTransferMoney(w http.ResponseWriter, r *http.Request) {
 			a.errorResponse(w, err, "transferring money", http.StatusInternalServerError)
 			return
 		}
-	}
-
-	if err = a.dbc.TransferMoneyWithCategory(from, to, amount, category); err != nil {
-		a.errorResponse(w, err, "transferring money", http.StatusInternalServerError)
-		return
+	} else {
+		if err = a.dbc.TransferMoneyWithCategory(from, to, amount, category); err != nil {
+			a.errorResponse(w, err, "transferring money", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.WriteHeader(http.StatusNoContent)

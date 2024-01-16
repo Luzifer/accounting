@@ -187,11 +187,11 @@ func TestTransactions(t *testing.T) {
 	checkAcctBal(bals, UnallocatedMoney, 500)
 
 	// List transactions
-	txs, err := dbc.ListTransactionsByAccount(tb1.ID, time.Time{})
+	txs, err := dbc.ListTransactionsByAccount(tb1.ID, time.Time{}, time.Now())
 	require.NoError(t, err)
 	assert.Len(t, txs, 4)
 
-	txs, err = dbc.ListTransactionsByAccount(UnallocatedMoney, time.Time{})
+	txs, err = dbc.ListTransactionsByAccount(UnallocatedMoney, time.Time{}, time.Now())
 	require.NoError(t, err)
 	assert.Len(t, txs, 2)
 
@@ -232,7 +232,7 @@ func TestTransactions(t *testing.T) {
 	require.Error(t, err)
 
 	// List transactions
-	txs, err = dbc.ListTransactionsByAccount(tb1.ID, time.Time{})
+	txs, err = dbc.ListTransactionsByAccount(tb1.ID, time.Time{}, time.Now())
 	require.NoError(t, err)
 	assert.Len(t, txs, 3)
 }

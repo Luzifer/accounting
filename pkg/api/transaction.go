@@ -82,12 +82,18 @@ func (a apiServer) handleListTransactionsByAccount(w http.ResponseWriter, r *htt
 		return
 	}
 
-	var since time.Time
+	var (
+		since time.Time
+		until = time.Now()
+	)
 	if v, err := time.Parse(time.RFC3339, r.URL.Query().Get("since")); err == nil {
 		since = v
 	}
+	if v, err := time.Parse(time.RFC3339, r.URL.Query().Get("until")); err == nil {
+		until = v
+	}
 
-	txs, err := a.dbc.ListTransactionsByAccount(accid, since)
+	txs, err := a.dbc.ListTransactionsByAccount(accid, since, until)
 	if err != nil {
 		a.errorResponse(w, err, "getting transactions", http.StatusInternalServerError)
 		return
