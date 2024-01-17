@@ -3,7 +3,6 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col">
-          <!-- TODO: Add time-selector -->
           <range-selector
             v-model="timeRange"
           />
@@ -15,7 +14,7 @@
           <div class="btn-group btn-group-sm">
             <button
               class="btn"
-              @click="showAddTransaction = true"
+              @click="showAddTransaction = !showAddTransaction"
             >
               <i class="fas fa-fw fa-plus-circle mr-1" />
               Add Transaction
