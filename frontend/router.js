@@ -1,10 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+import accountOverview from './components/accountOverview.vue'
 import budgetDashboard from './components/budgetDashboard.vue'
 
 const routes = [
   { component: budgetDashboard, name: 'budget', path: '/' },
-  { component: null, name: 'account-transactions', path: '/accounts/:id' },
+  { component: accountOverview, name: 'account-transactions', path: '/accounts/:accountId', props: true },
 ]
 
 const router = createRouter({

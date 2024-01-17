@@ -6,6 +6,7 @@ package database
 import (
 	"errors"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/Luzifer/go_helpers/v2/backoff"
@@ -173,7 +174,8 @@ func (c *Client) ListAccountBalances(showHidden bool) (a []AccountBalance, err e
 			}
 
 			if v != nil {
-				ab.Balance = *v
+				// Fix database doing e-15 stuff by rounding to full cents
+				ab.Balance = math.Round(*v*100) / 100 //nolint:gomnd
 			}
 
 			a = append(a, ab)
@@ -222,6 +224,20 @@ func (c *Client) ListAccountsByType(at AccountType, showHidden bool) (a []Accoun
 	}
 
 	return a, nil
+}
+
+// ListTransactions retrieves all transactions
+func (c *Client) ListTransactions(since, until time.Time) (txs []Transaction, err error) {
+	if err = c.retryRead(func(db *gorm.DB) error {
+		return db.
+			Where("time >= ? and time <= ?", since, until).
+			Find(&txs).
+			Error
+	}); err != nil {
+		return txs, fmt.Errorf("listing transactions: %w", err)
+	}
+
+	return txs, nil
 }
 
 // ListTransactionsByAccount retrieves all transactions for an account

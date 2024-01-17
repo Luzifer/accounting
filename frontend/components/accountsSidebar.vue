@@ -22,7 +22,7 @@
         <div class="d-flex align-items-center">
           <i class="fas fa-fw fa-credit-card me-1" /> Budget
           <span :class="{'ms-auto': true, 'text-danger': budgetSum < 0}">
-            {{ budgetSum.toFixed(2) }} €
+            {{ formatNumber(budgetSum) }} €
           </span>
         </div>
         <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 ps-3 small">
@@ -31,11 +31,11 @@
               v-for="acc in budgetAccounts"
               :key="acc.id"
               class="d-flex align-items-center text-white text-decoration-none"
-              :to="{ name: 'account-transactions', params: { id: acc.id }}"
+              :to="{ name: 'account-transactions', params: { accountId: acc.id }}"
             >
               {{ acc.name }}
               <span :class="{'ms-auto': true, 'text-danger': acc.balance < 0}">
-                {{ acc.balance.toFixed(2) }} €
+                {{ formatNumber(acc.balance) }} €
               </span>
             </router-link>
           </li>
@@ -45,7 +45,7 @@
         <div class="d-flex align-items-center">
           <i class="fas fa-fw fa-coin me-1" /> Tracking
           <span :class="{'ms-auto': true, 'text-danger': trackingSum < 0}">
-            {{ trackingSum.toFixed(2) }} €
+            {{ formatNumber(trackingSum) }} €
           </span>
         </div>
         <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 ps-3 small">
@@ -54,11 +54,11 @@
               v-for="acc in trackingAccounts"
               :key="acc.id"
               class="d-flex align-items-center text-white text-decoration-none"
-              :to="{ name: 'account-transactions', params: { id: acc.id }}"
+              :to="{ name: 'account-transactions', params: { accountId: acc.id }}"
             >
               {{ acc.name }}
               <span :class="{'ms-auto': true, 'text-danger': acc.balance < 0}">
-                {{ acc.balance.toFixed(2) }} €
+                {{ formatNumber(acc.balance) }} €
               </span>
             </router-link>
           </li>
@@ -79,14 +79,14 @@
       ref="createAccountModal"
       class="modal fade"
       tabindex="-1"
-      aria-labelledby="exampleModalLabel"
+      aria-labelledby="createAccountModalLabel"
       aria-hidden="true"
     >
       <div class="modal-dialog modal-sm">
         <div class="modal-content">
           <div class="modal-header">
             <h1
-              id="exampleModalLabel"
+              id="createAccountModalLabel"
               class="modal-title fs-5"
             >
               Add Account
@@ -166,8 +166,10 @@
 </template>
 
 <script>
+/* eslint-disable sort-imports */
 import { Modal } from 'bootstrap'
 
+import { formatNumber } from '../helpers'
 import { unallocatedMoneyAcc } from '../constants'
 
 export default {
@@ -266,6 +268,8 @@ export default {
           }
         })
     },
+
+    formatNumber,
   },
 
   name: 'AccountingAppSidebar',

@@ -75,6 +75,27 @@ func (a apiServer) handleGetTransactionByID(w http.ResponseWriter, r *http.Reque
 	a.jsonResponse(w, http.StatusOK, tx)
 }
 
+func (a apiServer) handleListTransactions(w http.ResponseWriter, r *http.Request) {
+	var (
+		since time.Time
+		until = time.Now()
+	)
+	if v, err := time.Parse(time.RFC3339, r.URL.Query().Get("since")); err == nil {
+		since = v
+	}
+	if v, err := time.Parse(time.RFC3339, r.URL.Query().Get("until")); err == nil {
+		until = v
+	}
+
+	txs, err := a.dbc.ListTransactions(since, until)
+	if err != nil {
+		a.errorResponse(w, err, "getting transactions", http.StatusInternalServerError)
+		return
+	}
+
+	a.jsonResponse(w, http.StatusOK, txs)
+}
+
 func (a apiServer) handleListTransactionsByAccount(w http.ResponseWriter, r *http.Request) {
 	accid, err := uuid.Parse(mux.Vars(r)["id"])
 	if err != nil {
