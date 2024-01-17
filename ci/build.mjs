@@ -3,7 +3,7 @@ import { sassPlugin } from 'esbuild-sass-plugin'
 import vuePlugin from 'esbuild-plugin-vue3'
 
 esbuild.build({
-  assetNames: '[name]',
+  assetNames: '[name]-[hash]',
   bundle: true,
   define: {
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'dev'),

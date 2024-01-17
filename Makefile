@@ -10,6 +10,7 @@ build: frontend
 
 .PHONY: frontend
 frontend: node_modules
+	git clean -fdx pkg/frontend/assets/
 	node ci/build.mjs
 
 node_modules:
