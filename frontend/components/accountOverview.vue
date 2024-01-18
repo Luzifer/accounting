@@ -2,13 +2,29 @@
   <div>
     <div class="container-fluid">
       <div class="row">
-        <div class="col">
+        <div class="col d-flex align-items-center">
           <range-selector
             v-model="timeRange"
           />
         </div>
-        <div class="col fs-4 text-center">
-          {{ accountIdToName[accountId] }}
+        <div class="col d-flex text-center flex-column">
+          <span class="fs-3 text-semibold">{{ accountIdToName[accountId] }}</span>
+          <div class="d-flex align-items-center mx-auto">
+            <div class="d-inline-flex text-center flex-column mx-2">
+              {{ formatNumber(account.balance - balanceUncleared) }} €
+              <span class="form-text mt-0">Cleared Balance</span>
+            </div>
+            +
+            <div class="d-inline-flex text-center flex-column mx-2">
+              {{ formatNumber(balanceUncleared) }} €
+              <span class="form-text mt-0">Uncleared Balance</span>
+            </div>
+            =
+            <div class="d-inline-flex text-center flex-column mx-2">
+              {{ formatNumber(account.balance) }} €
+              <span class="form-text mt-0">Working Balance</span>
+            </div>
+          </div>
         </div>
         <div class="col d-flex align-items-center justify-content-end">
           <div class="btn-group btn-group-sm">
@@ -299,6 +315,12 @@ export default {
 
     accountTypes() {
       return Object.fromEntries(this.accounts.map(acc => [acc.id, acc.type]))
+    },
+
+    balanceUncleared() {
+      return this.transactions
+        .filter(tx => !tx.cleared)
+        .reduce((sum, tx) => sum + tx.amount, 0)
     },
 
     categories() {
