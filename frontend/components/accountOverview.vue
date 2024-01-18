@@ -79,7 +79,7 @@
                   Category
                 </th>
                 <th>Description</th>
-                <th class="minimized-column text-end">
+                <th class="minimized-amount text-end">
                   Amount
                 </th>
                 <th class="minimized-column">
@@ -160,7 +160,7 @@
                   {{ accountIdToName[tx.category] }}
                 </td>
                 <td>{{ tx.description }}</td>
-                <td :class="{'minimized-column text-end': true, 'text-danger': tx.amount < 0}">
+                <td :class="{'minimized-amount text-end': true, 'text-danger': tx.amount < 0}">
                   {{ formatNumber(tx.amount) }} €
                 </td>
                 <td>
