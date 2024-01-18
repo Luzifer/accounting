@@ -10,17 +10,23 @@
         <div class="col d-flex text-center flex-column">
           <span class="fs-3 text-semibold">{{ accountIdToName[accountId] }}</span>
           <div class="d-flex align-items-center mx-auto">
-            <div class="d-inline-flex text-center flex-column mx-2">
+            <div class="d-inline-flex text-center flex-column mx-4">
               {{ formatNumber(account.balance - balanceUncleared) }} €
-              <span class="form-text mt-0">Cleared Balance</span>
+              <span class="form-text mt-0">
+                <i class="fas fa-fw fa-copyright mr-1 text-success" />
+                Cleared Balance
+              </span>
             </div>
             +
-            <div class="d-inline-flex text-center flex-column mx-2">
+            <div class="d-inline-flex text-center flex-column mx-4">
               {{ formatNumber(balanceUncleared) }} €
-              <span class="form-text mt-0">Uncleared Balance</span>
+              <span class="form-text mt-0">
+                <i class="fas fa-fw fa-copyright mr-1" />
+                Uncleared Balance
+              </span>
             </div>
             =
-            <div class="d-inline-flex text-center flex-column mx-2">
+            <div class="d-inline-flex text-center flex-column mx-4">
               {{ formatNumber(account.balance) }} €
               <span class="form-text mt-0">Working Balance</span>
             </div>
