@@ -53,7 +53,9 @@
                   Date
                 </th>
                 <th>Payee</th>
-                <th>Category</th>
+                <th v-if="account.type !== 'tracking'">
+                  Category
+                </th>
                 <th>Description</th>
                 <th class="minimized-column text-end">
                   Amount
@@ -80,7 +82,7 @@
                     type="text"
                   >
                 </td>
-                <td>
+                <td v-if="account.type !== 'tracking'">
                   <select
                     v-model="form.category"
                     class="form-select form-select-sm"
@@ -132,7 +134,9 @@
                   {{ new Date(tx.time).toLocaleDateString() }}
                 </td>
                 <td>{{ tx.payee }}</td>
-                <td>{{ accountIdToName[tx.category] }}</td>
+                <td v-if="account.type !== 'tracking'">
+                  {{ accountIdToName[tx.category] }}
+                </td>
                 <td>{{ tx.description }}</td>
                 <td :class="{'minimized-column text-end': true, 'text-danger': tx.amount < 0}">
                   {{ formatNumber(tx.amount) }} €
@@ -285,6 +289,10 @@ export default {
   components: { rangeSelector },
 
   computed: {
+    account() {
+      return this.accounts.filter(acc => acc.id === this.accountId)[0] || {}
+    },
+
     accountIdToName() {
       return Object.fromEntries(this.accounts.map(acc => [acc.id, acc.name]))
     },
@@ -379,6 +387,7 @@ export default {
         body: JSON.stringify({
           ...this.form,
           account: this.accountId,
+          category: this.form.category || null,
           time: new Date(this.form.date),
         }),
         headers: {
@@ -451,6 +460,7 @@ export default {
       })
         .then(() => {
           this.$emit('update-accounts')
+          this.fetchTransactions()
           Modal.getInstance(this.$refs.transferMoneyModal).toggle()
 
           this.modals.createTransfer = {

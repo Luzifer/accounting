@@ -283,6 +283,7 @@ export default {
       })
         .then(() => {
           this.$emit('update-accounts')
+          this.fetchTransactions()
           Modal.getInstance(this.$refs.transferMoneyModal).toggle()
 
           this.modals.createTransfer = {
