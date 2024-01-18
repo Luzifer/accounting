@@ -21,7 +21,7 @@ Well, depends on whether it fits your needs. This software carries a strong API-
 - [x] Differentiate between budget and tracking accounts
 - [x] Have an API to automatically enter transactions, transfer money between accounts & categories
 - [x] Can properly calculate based on your transactions how many money you have in which category
-- [ ] Have reports telling you about your net-work, where the money went, …
+- [ ] Have reports telling you about your net-worth, where the money went, …
 - [ ] Have a fancy UI with keyboard-shortcuts and all the cool stuff
 
 So back to your question: Get yourself a copy, start it (the default database is an in-memory SQLite database) and take it for a test-drive. You like it? Put a proper database under it, install it on a server and happy budgeting… You don't like it? No offence taken, just put it into the trash and use something else.
