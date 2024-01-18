@@ -2,9 +2,10 @@ PORT := 5000
 
 default: build
 
+build: export CGO_ENABLED=0
 build: frontend
 	go build \
-		-ldflags "-X main.version=$(shell git describe --tags --always || echo dev)" \
+		-ldflags "-s -w -X main.version=$(shell git describe --tags --always || echo dev)" \
 		-mod=readonly \
 		-trimpath
 
@@ -14,7 +15,7 @@ frontend: node_modules
 	node ci/build.mjs
 
 node_modules:
-	vault2env --key secret/jenkins/fontawesome -- npm ci --include=dev
+	npm ci --include=dev
 
 run: frontend
-	envrun -- go run . --listen=:$(PORT)
+	go run . --listen=:$(PORT)

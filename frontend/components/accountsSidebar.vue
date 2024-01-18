@@ -43,7 +43,7 @@
       </li>
       <li class="mb-1 fw-semibold">
         <div class="d-flex align-items-center">
-          <i class="fas fa-fw fa-coin me-1" /> Tracking
+          <i class="fas fa-fw fa-coins me-1" /> Tracking
           <span :class="{'ms-auto': true, 'text-danger': trackingSum < 0}">
             {{ formatNumber(trackingSum) }} €
           </span>

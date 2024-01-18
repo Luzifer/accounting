@@ -32,12 +32,12 @@ In short: Maybe. Longer version: This software started as a system to do **my** 
 
 ## How to run it?
 
-For local testing just clone the repo, ensure you got a fairly new `nodejs` (including NPM) and `go` toolchain installed, adjust `node_modules` and `run` targets in the `Makefile` and
+For local testing just clone the repo, ensure you got a fairly new `nodejs` (including NPM) and `go` toolchain installed and
 
 ```console
-# make run FONTAWESOME_NPM_AUTH_TOKEN=your-fa-pro-token
+# make run
 ```
 
 then go to http://localhost:5000/ and try it.
 
-To really host it, `make build` it (you need to find a way to get your FA Pro Token into the build and most likely you will need to edit the `node_modules` target in the `Makefile`), put it on your server and let it run. (It's a binary so probably use systemd to run it and an nginx as proxy in front of it doing auth-stuff…)
+To really host it, `make build` it, put it on your server and let it run. (It's a binary so probably use systemd to run it and an nginx as proxy in front of it doing auth-stuff…)

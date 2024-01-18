@@ -1,0 +1,6 @@
+accounting
+node_modules
+pkg/frontend/assets/app.*
+pkg/frontend/assets/*.ttf
+pkg/frontend/assets/*.woff2
+test.db
