@@ -56,8 +56,15 @@
                 <td :class="{'text-end': true, 'text-danger': (activityByCategory[cat.id] || 0) < 0}">
                   {{ formatNumber(activityByCategory[cat.id] || 0) }} €
                 </td>
-                <td :class="{'text-end': true, 'text-danger': cat.balance < 0}">
-                  {{ formatNumber(cat.balance) }} €
+                <td class="text-end">
+                  <a
+                    :class="{'text-decoration-none': true, 'text-danger': cat.balance < 0, 'text-white': cat.balance >= 0}"
+                    href="#"
+                    title="Transfer Money using this Category"
+                    @click.prevent="initTransfer(cat.id)"
+                  >
+                    {{ formatNumber(cat.balance) }} €
+                  </a>
                 </td>
               </tr>
             </tbody>
@@ -274,6 +281,39 @@ export default {
 
     formatNumber,
 
+    initTransfer(catId) {
+      const cat = this.categories.filter(cat => cat.id === catId)[0] || null
+      if (!cat) {
+        console.error(`init transfer from non existent category ${catId}`)
+        return
+      }
+
+      this.modals.createTransfer = {
+        amount: 0,
+        from: '',
+        to: '',
+      }
+
+      if (cat.balance <= 0) {
+        // Most likely scenario: Transfer in
+        this.modals.createTransfer.from = unallocatedMoneyAcc
+        this.modals.createTransfer.to = cat.id
+      } else {
+        // Most likely scenario: Transfer out
+        this.modals.createTransfer.from = cat.id
+      }
+
+      Modal.getOrCreateInstance(this.$refs.transferMoneyModal).toggle()
+    },
+
+    resetTransfer() {
+      this.modals.createTransfer = {
+        amount: 0,
+        from: unallocatedMoneyAcc,
+        to: '',
+      }
+    },
+
     transferMoney() {
       const params = new URLSearchParams()
       params.set('amount', this.modals.createTransfer.amount.toFixed(2))
@@ -285,14 +325,13 @@ export default {
           this.$emit('update-accounts')
           this.fetchTransactions()
           Modal.getInstance(this.$refs.transferMoneyModal).toggle()
-
-          this.modals.createTransfer = {
-            amount: 0,
-            from: unallocatedMoneyAcc,
-            to: '',
-          }
         })
     },
+  },
+
+  mounted() {
+    this.$refs.transferMoneyModal
+      .addEventListener('hidden.bs.modal', () => this.resetTransfer())
   },
 
   name: 'AccountingAppBudgetDashboard',
