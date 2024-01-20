@@ -7,16 +7,9 @@
       <i class="fas fa-fw fa-hand-holding-dollar me-2" />
       My Budget
     </router-link>
-    <!--
-    <router-link
-      to="/"
-      class="btn fs-5 text-start w-100"
-    >
-      <i class="fas fa-fw fa-chart-line" />
-      Reports
-    </router-link>
-    -->
+
     <hr>
+
     <ul class="list-unstyled lh-lg ps-0">
       <acc-list
         :accounts="budgetAccounts"
@@ -27,6 +20,7 @@
         header="Tracking"
       />
     </ul>
+
     <button
       class="btn btn-sm w-100"
       data-bs-toggle="modal"
