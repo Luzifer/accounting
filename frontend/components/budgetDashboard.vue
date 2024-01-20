@@ -17,7 +17,7 @@
         <div class="col d-flex align-items-center justify-content-end">
           <div class="btn-group btn-group-sm">
             <button
-              class="btn"
+              class="btn btn-primary"
               data-bs-toggle="modal"
               data-bs-target="#transferMoneyModal"
             >
