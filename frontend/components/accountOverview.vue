@@ -35,8 +35,10 @@
         <div class="col d-flex align-items-center justify-content-end">
           <div class="btn-group btn-group-sm">
             <button
+              v-shortkey.once="['ctrl', 'alt', 'n']"
               class="btn btn-primary"
               @click="showAddTransaction = !showAddTransaction"
+              @shortkey="showAddTransaction = !showAddTransaction"
             >
               <i class="fas fa-fw fa-plus-circle mr-1" />
               Add Transaction
@@ -79,9 +81,11 @@
               </li>
               <li>
                 <button
+                  v-shortkey="['del']"
                   class="dropdown-item text-danger"
                   :disabled="selectedTx.length < 1"
                   @click="deleteSelected"
+                  @shortkey="deleteSelected"
                 >
                   <i class="fas fa-fw fa-trash mr-1" />
                   Delete Selected

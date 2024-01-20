@@ -1,5 +1,6 @@
 /* eslint-disable sort-imports */
 import { createApp, h } from 'vue'
+import VueShortkey from 'vue3-shortkey'
 
 import './style.scss'
 
@@ -17,4 +18,5 @@ const app = createApp({
 })
 
 app.use(router)
+app.use(VueShortkey)
 app.mount('#app')
