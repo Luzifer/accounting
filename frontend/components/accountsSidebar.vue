@@ -18,52 +18,14 @@
     -->
     <hr>
     <ul class="list-unstyled lh-lg ps-0">
-      <li class="mb-1 fw-semibold">
-        <div class="d-flex align-items-center">
-          <i class="fas fa-fw fa-credit-card me-1" /> Budget
-          <span :class="{'ms-auto': true, 'text-danger': budgetSum < 0}">
-            {{ formatNumber(budgetSum) }} €
-          </span>
-        </div>
-        <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 ps-3 small">
-          <li>
-            <router-link
-              v-for="acc in budgetAccounts"
-              :key="acc.id"
-              class="d-flex align-items-center text-white text-decoration-none"
-              :to="{ name: 'account-transactions', params: { accountId: acc.id }}"
-            >
-              {{ acc.name }}
-              <span :class="{'ms-auto': true, 'text-danger': acc.balance < 0}">
-                {{ formatNumber(acc.balance) }} €
-              </span>
-            </router-link>
-          </li>
-        </ul>
-      </li>
-      <li class="mb-1 fw-semibold">
-        <div class="d-flex align-items-center">
-          <i class="fas fa-fw fa-coins me-1" /> Tracking
-          <span :class="{'ms-auto': true, 'text-danger': trackingSum < 0}">
-            {{ formatNumber(trackingSum) }} €
-          </span>
-        </div>
-        <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 ps-3 small">
-          <li>
-            <router-link
-              v-for="acc in trackingAccounts"
-              :key="acc.id"
-              class="d-flex align-items-center text-white text-decoration-none"
-              :to="{ name: 'account-transactions', params: { accountId: acc.id }}"
-            >
-              {{ acc.name }}
-              <span :class="{'ms-auto': true, 'text-danger': acc.balance < 0}">
-                {{ formatNumber(acc.balance) }} €
-              </span>
-            </router-link>
-          </li>
-        </ul>
-      </li>
+      <acc-list
+        :accounts="budgetAccounts"
+        header="Budget"
+      />
+      <acc-list
+        :accounts="trackingAccounts"
+        header="Tracking"
+      />
     </ul>
     <button
       class="btn btn-sm w-100"
@@ -169,10 +131,14 @@
 /* eslint-disable sort-imports */
 import { Modal } from 'bootstrap'
 
+import accList from './accountsSidebarAccList.vue'
+
 import { formatNumber } from '../helpers'
 import { unallocatedMoneyAcc } from '../constants'
 
 export default {
+  components: { accList },
+
   computed: {
     budgetAccounts() {
       const accs = (this.accounts || []).filter(acc => acc.type === 'budget')

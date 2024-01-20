@@ -2,15 +2,20 @@
   <div>
     <div class="container-fluid">
       <div class="row">
-        <div class="col d-flex align-items-center">
+        <div class="col d-flex fs-3 align-items-center text-semibold">
+          {{ accountIdToName[accountId] }}
+        </div>
+        <div class="col d-flex align-items-center justify-content-end">
           <range-selector
             v-model="timeRange"
           />
         </div>
-        <div class="col d-flex text-center flex-column">
-          <span class="fs-3 mb-2 text-semibold">{{ accountIdToName[accountId] }}</span>
-          <div class="d-flex align-items-center mx-auto">
-            <div class="d-inline-flex text-center flex-column mx-4">
+      </div>
+
+      <div class="row mt-3">
+        <div class="col d-flex align-items-center">
+          <div class="d-flex align-items-start">
+            <div class="d-inline-flex text-center flex-column me-4">
               {{ formatNumber(account.balance - balanceUncleared) }} €
               <span class="form-text mt-0">
                 <i class="fas fa-fw fa-copyright mr-1 text-success" />
@@ -26,7 +31,7 @@
               </span>
             </div>
             =
-            <div class="d-inline-flex text-center flex-column mx-4">
+            <div class="d-inline-flex text-center flex-column ms-4">
               {{ formatNumber(account.balance) }} €
               <span class="form-text mt-0">Working Balance</span>
             </div>
@@ -58,7 +63,7 @@
               @click="editSelected"
             >
               <i class="fas fa-fw fa-pencil mr-1" />
-              Edit
+              Edit Transaction
             </button>
             <button
               type="button"
@@ -95,6 +100,7 @@
           </div>
         </div>
       </div>
+
       <div class="row mt-3">
         <div class="col">
           <table class="table table-striped small">
