@@ -123,6 +123,31 @@ func (a apiServer) handleListTransactionsByAccount(w http.ResponseWriter, r *htt
 	a.jsonResponse(w, http.StatusOK, txs)
 }
 
+func (a apiServer) handleOverwriteTransaction(w http.ResponseWriter, r *http.Request) {
+	var (
+		tx   database.Transaction
+		txID uuid.UUID
+		err  error
+	)
+
+	if txID, err = uuid.Parse(mux.Vars(r)["id"]); err != nil {
+		a.errorResponse(w, err, "parsing id", http.StatusBadRequest)
+		return
+	}
+
+	if err = json.NewDecoder(r.Body).Decode(&tx); err != nil {
+		a.errorResponse(w, err, "parsing body", http.StatusBadRequest)
+		return
+	}
+
+	if err = a.dbc.UpdateTransaction(txID, tx); err != nil {
+		a.errorResponse(w, err, "updating transaction", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func (a apiServer) handleUpdateTransaction(w http.ResponseWriter, r *http.Request) {
 	var (
 		txID uuid.UUID

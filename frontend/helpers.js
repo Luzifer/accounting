@@ -39,5 +39,9 @@ export function responseToJSON(resp) {
     throw new Error(`non-2xx status code: ${resp.status}`)
   }
 
+  if (resp.status === 204) {
+    return null
+  }
+
   return resp.json()
 }

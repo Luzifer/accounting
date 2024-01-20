@@ -421,6 +421,33 @@ func (c *Client) UpdateAccountName(id uuid.UUID, name string) (err error) {
 	return nil
 }
 
+// UpdateTransaction takes a transaction, fetches the stored transaction
+// applies some sanity actions and stores it back to the database
+func (c *Client) UpdateTransaction(txID uuid.UUID, tx Transaction) (err error) {
+	if err = c.retryTx(func(db *gorm.DB) error {
+		var oldTX Transaction
+		if err := db.First(&oldTX, "id = ?", txID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return backoff.NewErrCannotRetry(fmt.Errorf("fetching old transaction: %w", err)) //nolint:wrapcheck
+			}
+			return fmt.Errorf("fetching old transaction: %w", err)
+		}
+
+		tx.ID = txID
+		tx.Account = oldTX.Account // Changing that would create chaos
+
+		if err = tx.Validate(c); err != nil {
+			return fmt.Errorf("validating transaction: %w", err)
+		}
+
+		return db.Save(&tx).Error
+	}); err != nil {
+		return fmt.Errorf("updating transaction: %w", err)
+	}
+
+	return nil
+}
+
 // UpdateTransactionCategory modifies the category of the given
 // transaction. (It is not possible to remove a category with this)
 func (c *Client) UpdateTransactionCategory(id uuid.UUID, cat uuid.UUID) (err error) {

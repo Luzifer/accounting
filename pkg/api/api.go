@@ -61,6 +61,9 @@ func RegisterHandler(apiRouter *mux.Router, dbc *database.Client, logger *logrus
 	apiRouter.
 		HandleFunc("/transactions/{id}", as.handleUpdateTransaction).
 		Methods(http.MethodPatch)
+	apiRouter.
+		HandleFunc("/transactions/{id}", as.handleOverwriteTransaction).
+		Methods(http.MethodPut)
 }
 
 func (a apiServer) errorResponse(w http.ResponseWriter, err error, desc string, status int) {

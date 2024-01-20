@@ -8,7 +8,7 @@
           />
         </div>
         <div class="col d-flex text-center flex-column">
-          <span class="fs-3 text-semibold">{{ accountIdToName[accountId] }}</span>
+          <span class="fs-3 mb-2 text-semibold">{{ accountIdToName[accountId] }}</span>
           <div class="d-flex align-items-center mx-auto">
             <div class="d-inline-flex text-center flex-column mx-4">
               {{ formatNumber(account.balance - balanceUncleared) }} €
@@ -35,28 +35,49 @@
         <div class="col d-flex align-items-center justify-content-end">
           <div class="btn-group btn-group-sm">
             <button
-              class="btn"
+              class="btn btn-primary"
               @click="showAddTransaction = !showAddTransaction"
             >
               <i class="fas fa-fw fa-plus-circle mr-1" />
               Add Transaction
             </button>
             <button
-              class="btn"
+              class="btn btn-primary"
               data-bs-toggle="modal"
               data-bs-target="#transferMoneyModal"
             >
               <i class="fas fa-fw fa-arrow-right-arrow-left mr-1" />
               Add Transfer
             </button>
+
             <button
-              class="btn text-danger"
-              :disabled="selectedTx.length < 1"
-              @click="deleteSelected"
+              class="btn btn-secondary"
+              :disabled="selectedTx.length !== 1"
+              @click="editSelected"
             >
-              <i class="fas fa-fw fa-trash mr-1" />
-              Delete Selected
+              <i class="fas fa-fw fa-pencil mr-1" />
+              Edit
             </button>
+            <button
+              type="button"
+              class="btn btn-secondary dropdown-toggle dropdown-toggle-split"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <span class="visually-hidden">Toggle Dropdown</span>
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <button
+                  class="dropdown-item text-danger"
+                  :disabled="selectedTx.length < 1"
+                  @click="deleteSelected"
+                >
+                  <i class="fas fa-fw fa-trash mr-1" />
+                  Delete Selected
+                </button>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
@@ -88,91 +109,59 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-if="showAddTransaction">
-                <td />
-                <td>
-                  <input
-                    v-model="form.date"
-                    class="form-control form-control-sm"
-                    type="date"
-                  >
-                </td>
-                <td>
-                  <input
-                    v-model="form.payee"
-                    class="form-control form-control-sm"
-                    type="text"
-                  >
-                </td>
-                <td v-if="account.type !== 'tracking'">
-                  <select
-                    v-model="form.category"
-                    class="form-select form-select-sm"
-                  >
-                    <option
-                      v-for="cat in categories"
-                      :key="cat.id"
-                      :value="cat.id"
-                    >
-                      {{ cat.name }}
-                    </option>
-                  </select>
-                </td>
-                <td>
-                  <input
-                    v-model="form.description"
-                    class="form-control form-control-sm"
-                    type="text"
-                  >
-                </td>
-                <td>
-                  <input
-                    v-model="form.amount"
-                    class="form-control form-control-sm"
-                    type="number"
-                    step="0.01"
-                    @keypress.enter="createTransaction"
-                  >
-                </td>
-                <td class="align-middle">
-                  <input
-                    v-model="form.cleared"
-                    type="checkbox"
-                    @keypress.enter="createTransaction"
-                  >
-                </td>
-              </tr>
-              <tr
+              <tx-editor
+                v-if="showAddTransaction"
+                :account="account"
+                :accounts="accounts"
+                @editCancelled="showAddTransaction = false"
+                @editSaved="txSaved"
+              />
+
+              <template
                 v-for="tx in sortedTransactions"
-                :key="tx.id"
               >
-                <td>
-                  <input
-                    v-model="selectedTxRaw[tx.id]"
-                    type="checkbox"
-                  >
-                </td>
-                <td class="minimized-column">
-                  {{ new Date(tx.time).toLocaleDateString() }}
-                </td>
-                <td>{{ tx.payee }}</td>
-                <td v-if="account.type !== 'tracking'">
-                  {{ accountIdToName[tx.category] }}
-                </td>
-                <td>{{ tx.description }}</td>
-                <td :class="{'minimized-amount text-end': true, 'text-danger': tx.amount < 0}">
-                  {{ formatNumber(tx.amount) }} €
-                </td>
-                <td>
-                  <a
-                    href="#"
-                    :class="{'text-decoration-none':true, 'text-muted': !tx.cleared, 'text-success': tx.cleared}"
-                    @click.prevent="markCleared(tx.id, !tx.cleared)"
-                  >
-                    <i class="fas fa-copyright" />
-                  </a>
-                </td>
-              </tr>
+                <tr
+                  v-if="tx.id !== editedTxId"
+                  :key="tx.id"
+                  @dblclick="editTx(tx.id)"
+                >
+                  <td>
+                    <input
+                      v-model="selectedTxRaw[tx.id]"
+                      type="checkbox"
+                    >
+                  </td>
+                  <td class="minimized-column">
+                    {{ new Date(tx.time).toLocaleDateString() }}
+                  </td>
+                  <td>{{ tx.payee }}</td>
+                  <td v-if="account.type !== 'tracking'">
+                    {{ accountIdToName[tx.category] }}
+                  </td>
+                  <td>{{ tx.description }}</td>
+                  <td :class="{'minimized-amount text-end': true, 'text-danger': tx.amount < 0}">
+                    {{ formatNumber(tx.amount) }} €
+                  </td>
+                  <td>
+                    <a
+                      href="#"
+                      :class="{'text-decoration-none':true, 'text-muted': !tx.cleared, 'text-success': tx.cleared}"
+                      @click.prevent="markCleared(tx.id, !tx.cleared)"
+                    >
+                      <i class="fas fa-copyright" />
+                    </a>
+                  </td>
+                </tr>
+                <tx-editor
+                  v-else
+                  :key="tx.id"
+                  :account="account"
+                  :accounts="accounts"
+                  :edit="tx"
+                  @editCancelled="editedTxId = null"
+                  @editSaved="txSaved"
+                />
+              </template>
             </tbody>
           </table>
         </div>
@@ -304,11 +293,12 @@
 /* eslint-disable sort-imports */
 import { Modal } from 'bootstrap'
 
-import { formatNumber, responseToJSON } from '../helpers'
+import { formatNumber } from '../helpers'
 import rangeSelector from './rangeSelector.vue'
+import txEditor from './txEditor.vue'
 
 export default {
-  components: { rangeSelector },
+  components: { rangeSelector, txEditor },
 
   computed: {
     account() {
@@ -382,16 +372,7 @@ export default {
 
   data() {
     return {
-      form: {
-        amount: 0,
-        category: '',
-        cleared: false,
-        date: new Date().toISOString()
-          .split('T')[0],
-
-        description: '',
-        payee: '',
-      },
+      editedTxId: null,
 
       modals: {
         createTransfer: {
@@ -410,36 +391,6 @@ export default {
   },
 
   methods: {
-    createTransaction() {
-      return fetch('/api/transactions', {
-        body: JSON.stringify({
-          ...this.form,
-          account: this.accountId,
-          category: this.form.category || null,
-          time: new Date(this.form.date),
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
-      })
-        .then(responseToJSON)
-        .then(() => {
-          this.$emit('update-accounts')
-          this.fetchTransactions()
-
-          this.showAddTransaction = false
-          this.form = {
-            amount: 0,
-            category: '',
-            cleared: false,
-            date: this.form.date,
-            description: '',
-            payee: '',
-          }
-        })
-    },
-
     deleteSelected() {
       const actions = []
       for (const id of this.selectedTx) {
@@ -453,6 +404,14 @@ export default {
           this.$emit('update-accounts')
           this.fetchTransactions()
         })
+    },
+
+    editSelected() {
+      this.editTx(this.selectedTx[0])
+    },
+
+    editTx(txId) {
+      this.editedTxId = txId
     },
 
     fetchTransactions() {
@@ -498,6 +457,12 @@ export default {
             to: this.accountId,
           }
         })
+    },
+
+    txSaved() {
+      this.editedTxId = null
+      this.$emit('update-accounts')
+      this.fetchTransactions()
     },
 
     updateSelectAll(evt) {
