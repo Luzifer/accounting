@@ -69,6 +69,16 @@
             <ul class="dropdown-menu">
               <li>
                 <button
+                  class="dropdown-item"
+                  :disabled="selectedTx.length < 1"
+                  @click="moveToToday"
+                >
+                  <i class="fas fa-fw fa-calendar-days mr-1" />
+                  Move to Today
+                </button>
+              </li>
+              <li>
+                <button
                   class="dropdown-item text-danger"
                   :disabled="selectedTx.length < 1"
                   @click="deleteSelected"
@@ -433,6 +443,29 @@ export default {
         method: 'PATCH',
       })
         .then(() => this.fetchTransactions())
+    },
+
+    moveToToday() {
+      const actions = []
+      for (const id of this.selectedTx) {
+        actions.push(fetch(`/api/transactions/${id}`, {
+          body: JSON.stringify([
+            {
+              op: 'replace',
+              path: '/time',
+              value: new Date(new Date().toISOString()
+                .split('T')[0]),
+            },
+          ]),
+          method: 'PATCH',
+        }))
+      }
+
+      Promise.all(actions)
+        .then(() => {
+          this.$emit('update-accounts')
+          this.fetchTransactions()
+        })
     },
 
     transferMoney() {

@@ -1,14 +1,17 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"time"
 
 	"git.luzifer.io/luzifer/accounting/pkg/database"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	jsonpatch "gopkg.in/evanphx/json-patch.v5"
 	"gorm.io/gorm"
 )
 
@@ -177,6 +180,64 @@ func (a apiServer) handleUpdateTransaction(w http.ResponseWriter, r *http.Reques
 			a.errorResponse(w, err, "updating transaction category", http.StatusInternalServerError)
 			return
 		}
+	}
+
+	a.handleTransactionJSONPatch(txID, w, r)
+}
+
+func (a apiServer) handleTransactionJSONPatch(txID uuid.UUID, w http.ResponseWriter, r *http.Request) {
+	var (
+		err     error
+		reqBody = new(bytes.Buffer)
+	)
+
+	if _, err = io.Copy(reqBody, r.Body); err != nil {
+		a.errorResponse(w, err, "reading request body", http.StatusBadRequest)
+		return
+	}
+
+	if reqBody.Len() < 2 { //nolint:gomnd
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	var patch jsonpatch.Patch
+	if err = json.NewDecoder(reqBody).Decode(&patch); err != nil {
+		a.errorResponse(w, err, "parsing json-patch body", http.StatusBadRequest)
+		return
+	}
+
+	if len(patch) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	tx, err := a.dbc.GetTransactionByID(txID)
+	if err != nil {
+		a.errorResponse(w, err, "getting transaction", http.StatusInternalServerError)
+		return
+	}
+
+	txdoc, err := json.Marshal(tx)
+	if err != nil {
+		a.errorResponse(w, err, "marshalling transaction", http.StatusInternalServerError)
+		return
+	}
+
+	if txdoc, err = patch.Apply(txdoc); err != nil {
+		a.errorResponse(w, err, "applying patch", http.StatusInternalServerError)
+		return
+	}
+
+	var updTx database.Transaction
+	if err = json.Unmarshal(txdoc, &updTx); err != nil {
+		a.errorResponse(w, err, "unmarshalling transaction", http.StatusInternalServerError)
+		return
+	}
+
+	if err = a.dbc.UpdateTransaction(txID, updTx); err != nil {
+		a.errorResponse(w, err, "updating transaction", http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
