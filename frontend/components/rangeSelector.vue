@@ -13,6 +13,7 @@
           v-for="(name, idx) in monthNames"
           :key="idx"
           :value="idx"
+          :disabled="dateComponents.fromYear === dateComponents.toYear && idx > dateComponents.toMonth"
         >
           {{ name }}
         </option>
@@ -25,6 +26,7 @@
           v-for="year in years"
           :key="year"
           :value="year"
+          :disabled="year > dateComponents.toYear"
         >
           {{ year }}
         </option>
@@ -41,6 +43,7 @@
             v-for="(name, idx) in monthNames"
             :key="idx"
             :value="idx"
+            :disabled="dateComponents.fromYear === dateComponents.toYear && idx < dateComponents.fromMonth"
           >
             {{ name }}
           </option>
@@ -53,6 +56,7 @@
             v-for="year in years"
             :key="year"
             :value="year"
+            :disabled="year < dateComponents.fromYear"
           >
             {{ year }}
           </option>
