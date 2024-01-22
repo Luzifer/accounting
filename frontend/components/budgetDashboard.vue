@@ -49,7 +49,16 @@
                 v-for="cat in categories"
                 :key="cat.id"
               >
-                <td>{{ cat.name }}</td>
+                <td>
+                  <a
+                    class="text-white text-decoration-none"
+                    href="#"
+                    title="Click to Edit"
+                    @click.prevent="editedAccId = cat.id"
+                  >
+                    {{ cat.name }}
+                  </a>
+                </td>
                 <td :class="{'text-end': true, 'text-danger': (allocatedByCategory[cat.id] || 0) < 0}">
                   {{ formatNumber(allocatedByCategory[cat.id] || 0) }} €
                 </td>
@@ -170,6 +179,12 @@
         </div>
       </div>
     </div>
+
+    <account-editor
+      :account="editedAcc"
+      @editClosed="editedAccId = null"
+      @editComplete="$emit('update-accounts'); editedAccId = null"
+    />
   </div>
 </template>
 
@@ -177,12 +192,13 @@
 /* eslint-disable sort-imports */
 import { Modal } from 'bootstrap'
 
+import accountEditor from './accountEditor.vue'
 import { formatNumber } from '../helpers'
 import rangeSelector from './rangeSelector.vue'
 import { unallocatedMoneyAcc } from '../constants'
 
 export default {
-  components: { rangeSelector },
+  components: { accountEditor, rangeSelector },
 
   computed: {
     activityByCategory() {
@@ -209,6 +225,13 @@ export default {
         .filter(acc => acc.id !== unallocatedMoneyAcc)
       accounts.sort((a, b) => a.name.localeCompare(b.name))
       return accounts
+    },
+
+    editedAcc() {
+      if (!this.editedAccId) {
+        return null
+      }
+      return this.accounts.filter(acc => acc.id === this.editedAccId)[0] || null
     },
 
     transferModalValid() {
@@ -254,6 +277,8 @@ export default {
 
   data() {
     return {
+      editedAccId: null,
+
       modals: {
         createTransfer: {
           amount: 0,
@@ -266,6 +291,8 @@ export default {
       transactions: [],
     }
   },
+
+  emits: ['update-accounts'],
 
   methods: {
     fetchTransactions() {

@@ -2,8 +2,17 @@
   <div>
     <div class="container-fluid">
       <div class="row">
-        <div class="col d-flex fs-3 align-items-center text-semibold">
-          {{ accountIdToName[accountId] }}
+        <div
+          class="col d-flex fs-3 align-items-center text-semibold"
+        >
+          <a
+            class="text-white text-decoration-none"
+            href="#"
+            title="Click to Edit"
+            @click.prevent="editedAccId = accountId"
+          >
+            {{ accountIdToName[accountId] }}
+          </a>
         </div>
         <div class="col d-flex align-items-center justify-content-end">
           <range-selector
@@ -306,6 +315,12 @@
         </div>
       </div>
     </div>
+
+    <account-editor
+      :account="editedAcc"
+      @editClosed="editedAccId = null"
+      @editComplete="$emit('update-accounts'); editedAccId = null"
+    />
   </div>
 </template>
 
@@ -313,12 +328,13 @@
 /* eslint-disable sort-imports */
 import { Modal } from 'bootstrap'
 
+import accountEditor from './accountEditor.vue'
 import { formatNumber } from '../helpers'
 import rangeSelector from './rangeSelector.vue'
 import txEditor from './txEditor.vue'
 
 export default {
-  components: { rangeSelector, txEditor },
+  components: { accountEditor, rangeSelector, txEditor },
 
   computed: {
     account() {
@@ -343,6 +359,13 @@ export default {
       const cats = this.accounts.filter(acc => acc.type === 'category')
       cats.sort((a, b) => a.name.localeCompare(b.name))
       return cats
+    },
+
+    editedAcc() {
+      if (!this.editedAccId) {
+        return null
+      }
+      return this.accounts.filter(acc => acc.id === this.editedAccId)[0] || null
     },
 
     selectedTx() {
@@ -392,6 +415,7 @@ export default {
 
   data() {
     return {
+      editedAccId: null,
       editedTxId: null,
 
       modals: {
@@ -409,6 +433,8 @@ export default {
       transactions: [],
     }
   },
+
+  emits: ['update-accounts'],
 
   methods: {
     deleteSelected() {
