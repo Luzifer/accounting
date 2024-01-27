@@ -17,5 +17,18 @@ frontend: node_modules
 node_modules:
 	npm ci --include=dev
 
+publish: frontend
+	bash ci/build.sh
+
 run: frontend
 	go run . --listen=:$(PORT)
+
+trivy:
+	trivy fs . \
+		--dependency-tree \
+		--exit-code 1 \
+		--format table \
+		--ignore-unfixed \
+		--quiet \
+		--scanners license,misconfig,secret,vuln \
+		--severity HIGH,CRITICAL

@@ -23,6 +23,7 @@ RUN set -ex \
 COPY --from=builder /go/src/accounting/accounting /usr/local/bin/accounting
 
 EXPOSE 3000
+USER 1000
 
 ENTRYPOINT ["/usr/local/bin/accounting"]
 CMD ["--"]
