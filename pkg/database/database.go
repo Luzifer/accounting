@@ -111,6 +111,18 @@ func (c *Client) CreateTransaction(tx Transaction) (ntx Transaction, err error) 
 // DeleteTransaction deletes a transaction
 func (c *Client) DeleteTransaction(id uuid.UUID) (err error) {
 	if err = c.retryTx(func(db *gorm.DB) error {
+		tx, err := c.GetTransactionByID(id)
+		if err != nil {
+			return err
+		}
+
+		if tx.PairKey.Valid {
+			// We got a paired transaction which would be out-of-sync if we
+			// only delete one part of it so instead of doing a delete on the
+			// ID of the transaction, we do a delete on the pair-key
+			return db.Delete(&Transaction{}, "pair_key = ?", tx.PairKey.UUID).Error
+		}
+
 		return db.Delete(&Transaction{}, "id = ?", id).Error
 	}); err != nil {
 		return fmt.Errorf("deleting transaction: %w", err)
@@ -273,6 +285,8 @@ func (c *Client) TransferMoney(from, to uuid.UUID, amount float64) (err error) {
 		return fmt.Errorf("account type mismatch: %s != %s", fromAcc.Type, toAcc.Type)
 	}
 
+	pairKey := uuid.Must(uuid.NewRandom())
+
 	var txs []*Transaction
 	switch fromAcc.Type {
 	case AccountTypeBudget, AccountTypeTracking:
@@ -285,6 +299,7 @@ func (c *Client) TransferMoney(from, to uuid.UUID, amount float64) (err error) {
 				Account:     uuid.NullUUID{UUID: from, Valid: true},
 				Category:    uuid.NullUUID{},
 				Cleared:     false,
+				PairKey:     uuid.NullUUID{UUID: pairKey, Valid: true},
 			},
 			{
 				Time:        time.Now().UTC(),
@@ -293,6 +308,7 @@ func (c *Client) TransferMoney(from, to uuid.UUID, amount float64) (err error) {
 				Account:     uuid.NullUUID{UUID: to, Valid: true},
 				Category:    uuid.NullUUID{},
 				Cleared:     false,
+				PairKey:     uuid.NullUUID{UUID: pairKey, Valid: true},
 			},
 		}
 
@@ -306,6 +322,7 @@ func (c *Client) TransferMoney(from, to uuid.UUID, amount float64) (err error) {
 				Account:     uuid.NullUUID{},
 				Category:    uuid.NullUUID{UUID: from, Valid: true},
 				Cleared:     false,
+				PairKey:     uuid.NullUUID{UUID: pairKey, Valid: true},
 			},
 			{
 				Time:        time.Now().UTC(),
@@ -314,6 +331,7 @@ func (c *Client) TransferMoney(from, to uuid.UUID, amount float64) (err error) {
 				Account:     uuid.NullUUID{},
 				Category:    uuid.NullUUID{UUID: to, Valid: true},
 				Cleared:     false,
+				PairKey:     uuid.NullUUID{UUID: pairKey, Valid: true},
 			},
 		}
 	}
@@ -350,6 +368,8 @@ func (c *Client) TransferMoneyWithCategory(from, to uuid.UUID, amount float64, c
 		return fmt.Errorf("transfer contained category-type account")
 	}
 
+	pairKey := uuid.Must(uuid.NewRandom())
+
 	if err = c.retryTx(func(tx *gorm.DB) (err error) {
 		fromTx := Transaction{
 			Time:        time.Now().UTC(),
@@ -358,6 +378,7 @@ func (c *Client) TransferMoneyWithCategory(from, to uuid.UUID, amount float64, c
 			Account:     uuid.NullUUID{UUID: from, Valid: true},
 			Category:    uuid.NullUUID{},
 			Cleared:     false,
+			PairKey:     uuid.NullUUID{UUID: pairKey, Valid: true},
 		}
 
 		if fromAcc.Type == AccountTypeBudget {
@@ -371,6 +392,7 @@ func (c *Client) TransferMoneyWithCategory(from, to uuid.UUID, amount float64, c
 			Account:     uuid.NullUUID{UUID: to, Valid: true},
 			Category:    uuid.NullUUID{},
 			Cleared:     false,
+			PairKey:     uuid.NullUUID{UUID: pairKey, Valid: true},
 		}
 
 		if toAcc.Type == AccountTypeBudget {

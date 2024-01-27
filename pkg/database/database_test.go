@@ -77,21 +77,47 @@ func TestAccountManagement(t *testing.T) {
 	assert.Equal(t, "renamed", act.Name)
 }
 
+func TestPairKeyRemoval(t *testing.T) {
+	dbc, err := New("sqlite", testDSN)
+	require.NoError(t, err)
+
+	// Create two accounts to transfer from / to
+	tb1, err := dbc.CreateAccount("test1", AccountTypeBudget)
+	require.NoError(t, err)
+	tb2, err := dbc.CreateAccount("test2", AccountTypeBudget)
+	require.NoError(t, err)
+
+	// Lets verify both of them do have zero-balance
+	bals, err := dbc.ListAccountBalances(false)
+	require.NoError(t, err)
+	testCheckAcctBal(t, bals, tb1.ID, 0)
+	testCheckAcctBal(t, bals, tb2.ID, 0)
+
+	// Transfer some money
+	require.NoError(t, dbc.TransferMoney(tb1.ID, tb2.ID, 500))
+	bals, err = dbc.ListAccountBalances(false)
+	require.NoError(t, err)
+	testCheckAcctBal(t, bals, tb1.ID, -500)
+	testCheckAcctBal(t, bals, tb2.ID, 500)
+
+	// Now fetch the transactions on one of the accounts and delete the only one
+	txs, err := dbc.ListTransactionsByAccount(tb1.ID, time.Time{}, time.Now())
+	require.NoError(t, err)
+	require.Len(t, txs, 1) // Should only be one by now
+
+	require.NoError(t, dbc.DeleteTransaction(txs[0].ID))
+
+	// Check both accounts went back to zero-balance (so paired tx are gone)
+	bals, err = dbc.ListAccountBalances(false)
+	require.NoError(t, err)
+	testCheckAcctBal(t, bals, tb1.ID, 0)
+	testCheckAcctBal(t, bals, tb2.ID, 0)
+}
+
 //nolint:funlen
 func TestTransactions(t *testing.T) {
 	dbc, err := New("sqlite", testDSN)
 	require.NoError(t, err)
-
-	checkAcctBal := func(bals []AccountBalance, act uuid.UUID, bal float64) {
-		for _, b := range bals {
-			if b.ID == act {
-				assert.Equal(t, bal, b.Balance)
-				return
-			}
-		}
-
-		t.Errorf("account %s balance not found", act)
-	}
 
 	// Set up some accounts for testing
 	tb1, err := dbc.CreateAccount("test1", AccountTypeBudget)
@@ -130,41 +156,41 @@ func TestTransactions(t *testing.T) {
 	// Now we should have money…
 	bals, err := dbc.ListAccountBalances(false)
 	require.NoError(t, err)
-	checkAcctBal(bals, tb1.ID, 1000)
-	checkAcctBal(bals, tb2.ID, 0)
-	checkAcctBal(bals, tt.ID, 0)
-	checkAcctBal(bals, tc.ID, 0)
-	checkAcctBal(bals, UnallocatedMoney, 1000)
+	testCheckAcctBal(t, bals, tb1.ID, 1000)
+	testCheckAcctBal(t, bals, tb2.ID, 0)
+	testCheckAcctBal(t, bals, tt.ID, 0)
+	testCheckAcctBal(t, bals, tc.ID, 0)
+	testCheckAcctBal(t, bals, UnallocatedMoney, 1000)
 
 	// Lets redistribute the money
 	require.NoError(t, dbc.TransferMoney(UnallocatedMoney, tc.ID, 500))
 	bals, err = dbc.ListAccountBalances(false)
 	require.NoError(t, err)
-	checkAcctBal(bals, tb1.ID, 1000)
-	checkAcctBal(bals, tb2.ID, 0)
-	checkAcctBal(bals, tt.ID, 0)
-	checkAcctBal(bals, tc.ID, 500)
-	checkAcctBal(bals, UnallocatedMoney, 500)
+	testCheckAcctBal(t, bals, tb1.ID, 1000)
+	testCheckAcctBal(t, bals, tb2.ID, 0)
+	testCheckAcctBal(t, bals, tt.ID, 0)
+	testCheckAcctBal(t, bals, tc.ID, 500)
+	testCheckAcctBal(t, bals, UnallocatedMoney, 500)
 
 	// Now transfer some money to another budget account
 	require.NoError(t, dbc.TransferMoney(tb1.ID, tb2.ID, 100))
 	bals, err = dbc.ListAccountBalances(false)
 	require.NoError(t, err)
-	checkAcctBal(bals, tb1.ID, 900)
-	checkAcctBal(bals, tb2.ID, 100)
-	checkAcctBal(bals, tt.ID, 0)
-	checkAcctBal(bals, tc.ID, 500)
-	checkAcctBal(bals, UnallocatedMoney, 500)
+	testCheckAcctBal(t, bals, tb1.ID, 900)
+	testCheckAcctBal(t, bals, tb2.ID, 100)
+	testCheckAcctBal(t, bals, tt.ID, 0)
+	testCheckAcctBal(t, bals, tc.ID, 500)
+	testCheckAcctBal(t, bals, UnallocatedMoney, 500)
 
 	// And some to a tracking account (needs category)
 	require.NoError(t, dbc.TransferMoneyWithCategory(tb1.ID, tt.ID, 100, tc.ID))
 	bals, err = dbc.ListAccountBalances(false)
 	require.NoError(t, err)
-	checkAcctBal(bals, tb1.ID, 800)
-	checkAcctBal(bals, tb2.ID, 100)
-	checkAcctBal(bals, tt.ID, 100)
-	checkAcctBal(bals, tc.ID, 400)
-	checkAcctBal(bals, UnallocatedMoney, 500)
+	testCheckAcctBal(t, bals, tb1.ID, 800)
+	testCheckAcctBal(t, bals, tb2.ID, 100)
+	testCheckAcctBal(t, bals, tt.ID, 100)
+	testCheckAcctBal(t, bals, tc.ID, 400)
+	testCheckAcctBal(t, bals, UnallocatedMoney, 500)
 
 	// We might also spend money
 	lltx, err := dbc.CreateTransaction(Transaction{
@@ -180,11 +206,11 @@ func TestTransactions(t *testing.T) {
 	assert.False(t, lltx.Cleared)
 	bals, err = dbc.ListAccountBalances(false)
 	require.NoError(t, err)
-	checkAcctBal(bals, tb1.ID, 700)
-	checkAcctBal(bals, tb2.ID, 100)
-	checkAcctBal(bals, tt.ID, 100)
-	checkAcctBal(bals, tc.ID, 300)
-	checkAcctBal(bals, UnallocatedMoney, 500)
+	testCheckAcctBal(t, bals, tb1.ID, 700)
+	testCheckAcctBal(t, bals, tb2.ID, 100)
+	testCheckAcctBal(t, bals, tt.ID, 100)
+	testCheckAcctBal(t, bals, tc.ID, 300)
+	testCheckAcctBal(t, bals, UnallocatedMoney, 500)
 
 	// List transactions
 	txs, err := dbc.ListTransactionsByAccount(tb1.ID, time.Time{}, time.Now())
@@ -199,11 +225,11 @@ func TestTransactions(t *testing.T) {
 	require.NoError(t, dbc.UpdateTransactionCategory(lltx.ID, UnallocatedMoney))
 	bals, err = dbc.ListAccountBalances(false)
 	require.NoError(t, err)
-	checkAcctBal(bals, tb1.ID, 700)
-	checkAcctBal(bals, tb2.ID, 100)
-	checkAcctBal(bals, tt.ID, 100)
-	checkAcctBal(bals, tc.ID, 400)
-	checkAcctBal(bals, UnallocatedMoney, 400)
+	testCheckAcctBal(t, bals, tb1.ID, 700)
+	testCheckAcctBal(t, bals, tb2.ID, 100)
+	testCheckAcctBal(t, bals, tt.ID, 100)
+	testCheckAcctBal(t, bals, tc.ID, 400)
+	testCheckAcctBal(t, bals, UnallocatedMoney, 400)
 
 	// Lets try to move it to a broken category
 	require.Error(t, dbc.UpdateTransactionCategory(lltx.ID, tt.ID))
@@ -221,11 +247,11 @@ func TestTransactions(t *testing.T) {
 	require.NoError(t, dbc.DeleteTransaction(lltx.ID))
 	bals, err = dbc.ListAccountBalances(false)
 	require.NoError(t, err)
-	checkAcctBal(bals, tb1.ID, 800)
-	checkAcctBal(bals, tb2.ID, 100)
-	checkAcctBal(bals, tt.ID, 100)
-	checkAcctBal(bals, tc.ID, 400)
-	checkAcctBal(bals, UnallocatedMoney, 500)
+	testCheckAcctBal(t, bals, tb1.ID, 800)
+	testCheckAcctBal(t, bals, tb2.ID, 100)
+	testCheckAcctBal(t, bals, tt.ID, 100)
+	testCheckAcctBal(t, bals, tc.ID, 400)
+	testCheckAcctBal(t, bals, UnallocatedMoney, 500)
 
 	// Get a deleted transaction
 	_, err = dbc.GetTransactionByID(lltx.ID)
@@ -235,4 +261,15 @@ func TestTransactions(t *testing.T) {
 	txs, err = dbc.ListTransactionsByAccount(tb1.ID, time.Time{}, time.Now())
 	require.NoError(t, err)
 	assert.Len(t, txs, 3)
+}
+
+func testCheckAcctBal(t *testing.T, bals []AccountBalance, act uuid.UUID, bal float64) {
+	for _, b := range bals {
+		if b.ID == act {
+			assert.Equal(t, bal, b.Balance)
+			return
+		}
+	}
+
+	t.Errorf("account %s balance not found", act)
 }

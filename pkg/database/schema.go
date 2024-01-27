@@ -39,6 +39,8 @@ type (
 		Account     uuid.NullUUID `gorm:"type:uuid" json:"account"`
 		Category    uuid.NullUUID `gorm:"type:uuid" json:"category"`
 		Cleared     bool          `json:"cleared"`
+
+		PairKey uuid.NullUUID `gorm:"type:uuid" json:"-"`
 	}
 
 	// BaseModel is used internally in all other models for common fields
