@@ -29,6 +29,27 @@ export function formatNumber(number, thousandSep = ' ', decimalSep = '.', places
 }
 
 /**
+ * Common code to derive a class from a numeric value
+ *
+ * @param {Number} num The value to choose the class from
+ * @param {Array} extraClasses Extra classes to add to the output string
+ * @param {String | null} positiveClass Class to use on positive numbers
+ * @returns {String} Space separated combined class list
+ */
+export function classFromNumber(num, extraClasses = [], positiveClass = null) {
+  const classes = extraClasses || []
+  if (num < 0) {
+    classes.push('text-danger')
+  } else if (num === 0) {
+    classes.push('text-muted')
+  } else if (positiveClass) {
+    classes.push(positiveClass)
+  }
+
+  return classes.join(' ')
+}
+
+/**
  * Parses the response to JSON and throws an exception in case the
  * request was non-2xx
  *

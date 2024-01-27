@@ -10,7 +10,7 @@
         </div>
         <div class="col d-flex align-items-center justify-content-center">
           <div :class="unallocatedMoneyClass">
-            <span class="fs-4">{{ formatNumber(unallocatedMoney) }} €</span>
+            <span :class="classFromNumber(unallocatedMoney, ['fs-4'])">{{ formatNumber(unallocatedMoney) }} €</span>
             <span class="small">Unallocated</span>
           </div>
         </div>
@@ -59,15 +59,15 @@
                     {{ cat.name }}
                   </a>
                 </td>
-                <td :class="{'text-end': true, 'text-danger': (allocatedByCategory[cat.id] || 0) < 0}">
+                <td :class="classFromNumber(allocatedByCategory[cat.id] || 0, ['text-end'])">
                   {{ formatNumber(allocatedByCategory[cat.id] || 0) }} €
                 </td>
-                <td :class="{'text-end': true, 'text-danger': (activityByCategory[cat.id] || 0) < 0}">
+                <td :class="classFromNumber(activityByCategory[cat.id] || 0, ['text-end'])">
                   {{ formatNumber(activityByCategory[cat.id] || 0) }} €
                 </td>
                 <td class="text-end">
                   <a
-                    :class="{'text-decoration-none': true, 'text-danger': cat.balance < 0, 'text-white': cat.balance >= 0}"
+                    :class="classFromNumber(cat.balance, ['text-decoration-none'], 'text-white')"
                     href="#"
                     title="Transfer Money using this Category"
                     @click.prevent="initTransfer(cat.id)"
@@ -193,7 +193,7 @@
 import { Modal } from 'bootstrap'
 
 import accountEditor from './accountEditor.vue'
-import { formatNumber } from '../helpers'
+import { classFromNumber, formatNumber } from '../helpers'
 import rangeSelector from './rangeSelector.vue'
 import { unallocatedMoneyAcc } from '../constants'
 
@@ -295,6 +295,8 @@ export default {
   emits: ['update-accounts'],
 
   methods: {
+    classFromNumber,
+
     fetchTransactions() {
       const since = this.timeRange.start.toISOString()
       const until = this.timeRange.end.toISOString()

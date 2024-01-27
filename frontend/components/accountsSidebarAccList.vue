@@ -2,7 +2,7 @@
   <li class="mb-1 fw-semibold">
     <div class="d-flex align-items-center">
       <i class="fas fa-fw fa-credit-card me-1" /> {{ header }}
-      <span :class="{'ms-auto': true, 'text-danger': sum < 0}">
+      <span :class="classFromNumber(sum, ['ms-auto'])">
         {{ formatNumber(sum) }} €
       </span>
     </div>
@@ -15,7 +15,7 @@
           :to="{ name: 'account-transactions', params: { accountId: acc.id }}"
         >
           {{ acc.name }}
-          <span :class="{'ms-auto': true, 'text-danger': acc.balance < 0}">
+          <span :class="classFromNumber(acc.balance, ['ms-auto'])">
             {{ formatNumber(acc.balance) }} €
           </span>
         </router-link>
@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import { formatNumber } from '../helpers'
+import { classFromNumber, formatNumber } from '../helpers'
 
 export default {
   computed: {
@@ -35,6 +35,7 @@ export default {
   },
 
   methods: {
+    classFromNumber,
     formatNumber,
   },
 

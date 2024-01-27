@@ -25,7 +25,9 @@
         <div class="col d-flex align-items-center">
           <div class="d-flex align-items-start">
             <div class="d-inline-flex text-center flex-column me-4">
-              {{ formatNumber(account.balance - balanceUncleared) }} €
+              <span :class="classFromNumber(account.balance - balanceUncleared)">
+                {{ formatNumber(account.balance - balanceUncleared) }} €
+              </span>
               <span class="form-text mt-0">
                 <i class="fas fa-fw fa-copyright mr-1 text-success" />
                 Cleared Balance
@@ -33,7 +35,9 @@
             </div>
             +
             <div class="d-inline-flex text-center flex-column mx-4">
-              {{ formatNumber(balanceUncleared) }} €
+              <span :class="classFromNumber(balanceUncleared)">
+                {{ formatNumber(balanceUncleared) }} €
+              </span>
               <span class="form-text mt-0">
                 <i class="fas fa-fw fa-copyright mr-1" />
                 Uncleared Balance
@@ -41,7 +45,9 @@
             </div>
             =
             <div class="d-inline-flex text-center flex-column ms-4">
-              {{ formatNumber(account.balance) }} €
+              <span :class="classFromNumber(account.balance)">
+                {{ formatNumber(account.balance) }} €
+              </span>
               <span class="form-text mt-0">Working Balance</span>
             </div>
           </div>
@@ -168,7 +174,7 @@
                     {{ accountIdToName[tx.category] }}
                   </td>
                   <td>{{ tx.description }}</td>
-                  <td :class="{'minimized-amount text-end': true, 'text-danger': tx.amount < 0}">
+                  <td :class="classFromNumber(tx.amount, ['minimized-amount', 'text-end'])">
                     {{ formatNumber(tx.amount) }} €
                   </td>
                   <td>
@@ -329,7 +335,7 @@
 import { Modal } from 'bootstrap'
 
 import accountEditor from './accountEditor.vue'
-import { formatNumber } from '../helpers'
+import { classFromNumber, formatNumber } from '../helpers'
 import rangeSelector from './rangeSelector.vue'
 import txEditor from './txEditor.vue'
 
@@ -437,6 +443,8 @@ export default {
   emits: ['update-accounts'],
 
   methods: {
+    classFromNumber,
+
     deleteSelected() {
       const actions = []
       for (const id of this.selectedTx) {
