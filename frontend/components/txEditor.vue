@@ -103,7 +103,7 @@ export default {
     saveTransaction() {
       const body = JSON.stringify({
         ...this.form,
-        account: this.accountId,
+        account: this.account.id,
         category: this.form.category || null,
         time: new Date(this.form.date),
       })
