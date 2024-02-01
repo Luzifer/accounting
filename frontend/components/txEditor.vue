@@ -124,6 +124,21 @@ export default {
         .then(() => {
           this.$emit('editSaved')
         })
+        .then(() => {
+          if (!this.edit) {
+            this.form = {
+              amount: 0,
+              category: '',
+              cleared: false,
+              date: new Date().toISOString()
+                .split('T')[0],
+
+              description: '',
+              payee: '',
+            }
+            this.$refs.date.focus()
+          }
+        })
     },
 
     sendCancel() {
