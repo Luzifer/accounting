@@ -398,7 +398,15 @@ export default {
 
     sortedTransactions() {
       const tx = [...this.transactions]
-      tx.sort((b, a) => new Date(a.time).getTime() - new Date(b.time).getTime())
+      tx.sort((b, a) => {
+        if (a.cleared && !b.cleared) {
+          return -1
+        } else if (!a.cleared && b.cleared) {
+          return 1
+        }
+
+        return new Date(a.time).getTime() - new Date(b.time).getTime()
+      })
       return tx
     },
 
