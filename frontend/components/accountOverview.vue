@@ -73,6 +73,14 @@
             </button>
 
             <button
+              class="btn btn-success"
+              @click="markAccountReconciled"
+            >
+              <i class="fas fa-fw fa-square-check mr-1" />
+              Mark Reconciled
+            </button>
+
+            <button
               class="btn btn-secondary"
               :disabled="selectedTx.length !== 1"
               @click="editSelected"
@@ -80,6 +88,7 @@
               <i class="fas fa-fw fa-pencil mr-1" />
               Edit Transaction
             </button>
+
             <button
               type="button"
               class="btn btn-secondary dropdown-toggle dropdown-toggle-split"
@@ -178,7 +187,14 @@
                     {{ formatNumber(tx.amount) }} €
                   </td>
                   <td>
+                    <span
+                      v-if="tx.reconciled"
+                      class="text-success"
+                    >
+                      <i class="fas fa-lock" />
+                    </span>
                     <a
+                      v-else
                       href="#"
                       :class="{'text-decoration-none':true, 'text-muted': !tx.cleared, 'text-success': tx.cleared}"
                       @click.prevent="markCleared(tx.id, !tx.cleared)"
@@ -481,6 +497,13 @@ export default {
     },
 
     formatNumber,
+
+    markAccountReconciled() {
+      return fetch(`/api/accounts/${this.accountId}/reconcile`, {
+        method: 'PUT',
+      })
+        .then(() => this.fetchTransactions())
+    },
 
     markCleared(txId, cleared) {
       return fetch(`/api/transactions/${txId}?cleared=${cleared}`, {

@@ -267,6 +267,23 @@ func (c *Client) ListTransactionsByAccount(acc uuid.UUID, since, until time.Time
 	return txs, nil
 }
 
+// MarkAccountReconciled marks all cleared transactions as reconciled.
+// The account balance is NOT checked in this method.
+func (c *Client) MarkAccountReconciled(acc uuid.UUID) (err error) {
+	if err = c.retryTx(func(db *gorm.DB) error {
+		return db.
+			Model(&Transaction{}).
+			Where("account = ?", acc).
+			Where("cleared = ?", true).
+			Update("reconciled", true).
+			Error
+	}); err != nil {
+		return fmt.Errorf("updating transactions: %w", err)
+	}
+
+	return nil
+}
+
 // TransferMoney creates new Transactions for the given account
 // transfer. The account type of the from and to account must match
 // for this to work.

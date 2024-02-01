@@ -102,6 +102,25 @@ func (a apiServer) handleListAccounts(w http.ResponseWriter, r *http.Request) {
 	a.jsonResponse(w, http.StatusOK, payload)
 }
 
+func (a apiServer) handleAccountReconcile(w http.ResponseWriter, r *http.Request) {
+	var (
+		acctID uuid.UUID
+		err    error
+	)
+
+	if acctID, err = uuid.Parse(mux.Vars(r)["id"]); err != nil {
+		a.errorResponse(w, err, "parsing id", http.StatusBadRequest)
+		return
+	}
+
+	if err = a.dbc.MarkAccountReconciled(acctID); err != nil {
+		a.errorResponse(w, err, "marking reconciled", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func (a apiServer) handleTransferMoney(w http.ResponseWriter, r *http.Request) {
 	var (
 		amount             float64

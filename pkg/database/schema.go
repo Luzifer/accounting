@@ -39,6 +39,7 @@ type (
 		Account     uuid.NullUUID `gorm:"type:uuid" json:"account"`
 		Category    uuid.NullUUID `gorm:"type:uuid" json:"category"`
 		Cleared     bool          `json:"cleared"`
+		Reconciled  bool          `json:"reconciled"`
 
 		PairKey uuid.NullUUID `gorm:"type:uuid" json:"-"`
 	}

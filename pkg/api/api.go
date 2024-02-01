@@ -39,6 +39,9 @@ func RegisterHandler(apiRouter *mux.Router, dbc *database.Client, logger *logrus
 		HandleFunc("/accounts/{id}", as.handleUpdateAccount).
 		Methods(http.MethodPatch)
 	apiRouter.
+		HandleFunc("/accounts/{id}/reconcile", as.handleAccountReconcile).
+		Methods(http.MethodPut)
+	apiRouter.
 		HandleFunc("/accounts/{id}/transactions", as.handleListTransactionsByAccount).
 		Methods(http.MethodGet)
 	apiRouter.
