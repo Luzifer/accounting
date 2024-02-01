@@ -82,6 +82,8 @@ func (b *BaseModel) BeforeCreate(*gorm.DB) (err error) {
 }
 
 // Validate executes some basic checks on the transaction
+//
+//nolint:gocyclo
 func (t Transaction) Validate(c *Client) (err error) {
 	var errs []error
 
@@ -110,7 +112,7 @@ func (t Transaction) Validate(c *Client) (err error) {
 		}
 	}
 
-	if acc.Type == AccountTypeBudget && !t.Category.Valid {
+	if acc.Type == AccountTypeBudget && !t.Category.Valid && !t.PairKey.Valid {
 		errs = append(errs, fmt.Errorf("budget account transactions need a category"))
 	}
 

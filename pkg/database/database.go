@@ -457,6 +457,7 @@ func (c *Client) UpdateTransaction(txID uuid.UUID, tx Transaction) (err error) {
 
 		tx.ID = txID
 		tx.Account = oldTX.Account // Changing that would create chaos
+		tx.PairKey = oldTX.PairKey // Updating a paired tx should not decouple it
 
 		if err = tx.Validate(c); err != nil {
 			return fmt.Errorf("validating transaction: %w", err)
