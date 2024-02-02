@@ -128,7 +128,6 @@ import { Modal } from 'bootstrap'
 import accList from './accountsSidebarAccList.vue'
 
 import { formatNumber } from '../helpers'
-import { unallocatedMoneyAcc } from '../constants'
 
 export default {
   components: { accList },
@@ -172,6 +171,7 @@ export default {
       return fetch('/api/accounts', {
         body: JSON.stringify({
           name: this.modals.addAccount.name,
+          startingBalance: this.modals.addAccount.startingBalance,
           type: this.modals.addAccount.type,
         }),
         headers: {
@@ -179,44 +179,6 @@ export default {
         },
         method: 'POST',
       })
-        .then(resp => resp.json())
-        .then(account => {
-          if (account.type === 'budget') {
-            return fetch('/api/transactions', {
-              body: JSON.stringify({
-                account: account.id,
-                amount: this.modals.addAccount.startingBalance,
-                category: unallocatedMoneyAcc,
-                cleared: true,
-                description: 'Starting Balance',
-                time: new Date(),
-              }),
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              method: 'POST',
-            })
-          } else if (account.type === 'tracking') {
-            return fetch('/api/transactions', {
-              body: JSON.stringify({
-                account: account.id,
-                amount: this.modals.addAccount.startingBalance,
-                cleared: true,
-                description: 'Starting Balance',
-                time: new Date(),
-              }),
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              method: 'POST',
-            })
-          } else if (account.type === 'category') {
-            return fetch(`/api/accounts/${unallocatedMoneyAcc}/transfer/${account.id}?amount=${this.modals.addAccount.startingBalance}`, {
-              method: 'PUT',
-            })
-          }
-          throw new Error('invalid account type detected')
-        })
         .then(() => this.$emit('update-accounts'))
         .then(() => {
           Modal.getInstance(this.$refs.createAccountModal).toggle()

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	"git.luzifer.io/luzifer/accounting/pkg/database"
 	"github.com/google/uuid"
@@ -14,8 +15,9 @@ import (
 
 func (a apiServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) {
 	var payload struct {
-		Name string               `json:"name"`
-		Type database.AccountType `json:"type"`
+		Name            string               `json:"name"`
+		StartingBalance float64              `json:"startingBalance"`
+		Type            database.AccountType `json:"type"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
@@ -37,6 +39,37 @@ func (a apiServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		a.errorResponse(w, err, "creating account", http.StatusInternalServerError)
 		return
+	}
+
+	if payload.StartingBalance != 0 {
+		switch payload.Type {
+		case database.AccountTypeBudget:
+			_, err = a.dbc.CreateTransaction(database.Transaction{
+				Time:        time.Now(),
+				Description: "Starting Balance",
+				Amount:      payload.StartingBalance,
+				Account:     uuid.NullUUID{UUID: acc.ID, Valid: true},
+				Category:    uuid.NullUUID{UUID: database.UnallocatedMoney, Valid: true},
+				Cleared:     true,
+			})
+
+		case database.AccountTypeCategory:
+			err = a.dbc.TransferMoney(database.UnallocatedMoney, acc.ID, payload.StartingBalance)
+
+		case database.AccountTypeTracking:
+			_, err = a.dbc.CreateTransaction(database.Transaction{
+				Time:        time.Now(),
+				Description: "Starting Balance",
+				Amount:      payload.StartingBalance,
+				Account:     uuid.NullUUID{UUID: acc.ID, Valid: true},
+				Cleared:     true,
+			})
+		}
+
+		if err != nil {
+			a.errorResponse(w, err, "creating starting balance transaction", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	u, err := a.router.Get("GetAccount").URL("id", acc.ID.String())
