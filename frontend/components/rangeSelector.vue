@@ -84,8 +84,14 @@ export default {
 
   created() {
     const date = new Date()
-    const start = this.modelValue.start || new Date(date.getFullYear(), date.getMonth(), 1)
-    const end = this.modelValue.end || new Date(date.getFullYear(), date.getMonth() + 1, 0)
+    let start = this.modelValue.start || new Date(date.getFullYear(), date.getMonth(), 1)
+    let end = this.modelValue.end || new Date(date.getFullYear(), date.getMonth() + 1, 0)
+
+    if (this.storeKey && localStorage.getItem(`accounting:range-select:${this.storeKey}`)) {
+      const stored = JSON.parse(localStorage.getItem(`accounting:range-select:${this.storeKey}`))
+      start = new Date(stored.start)
+      end = new Date(stored.end)
+    }
 
     this.dateComponents = {
       fromMonth: start.getMonth(),
@@ -116,6 +122,17 @@ export default {
       } else {
         this.end = new Date(this.dateComponents.fromYear, this.dateComponents.fromMonth + 1, 1, 0)
       }
+
+      if (this.storeKey) {
+        localStorage.setItem(
+          `accounting:range-select:${this.storeKey}`,
+          JSON.stringify({
+            end: new Date(this.dateComponents.toYear, this.dateComponents.toMonth, 1),
+            start: new Date(this.dateComponents.fromYear, this.dateComponents.fromMonth, 1),
+          }),
+        )
+      }
+
       this.$emit('update:modelValue', { end: this.end, start: this.start })
     },
   },
@@ -145,6 +162,11 @@ export default {
     startYear: {
       default: 2020,
       type: Number,
+    },
+
+    storeKey: {
+      default: null,
+      type: String,
     },
   },
 

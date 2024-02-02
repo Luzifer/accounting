@@ -17,6 +17,7 @@
         <div class="col d-flex align-items-center justify-content-end">
           <range-selector
             v-model="timeRange"
+            store-key="account-overview"
           />
         </div>
       </div>
