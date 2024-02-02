@@ -10,7 +10,7 @@
         </div>
         <div class="col d-flex align-items-center justify-content-center">
           <div :class="unallocatedMoneyClass">
-            <span :class="classFromNumber(unallocatedMoney, ['fs-4'])">{{ formatNumber(unallocatedMoney) }} €</span>
+            <span class="fs-4">{{ formatNumber(unallocatedMoney) }} €</span>
             <span class="small">Unallocated</span>
           </div>
         </div>
