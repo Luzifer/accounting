@@ -480,7 +480,26 @@ func (c *Client) UpdateTransaction(txID uuid.UUID, tx Transaction) (err error) {
 			return fmt.Errorf("validating transaction: %w", err)
 		}
 
-		return db.Save(&tx).Error
+		if err = db.Save(&tx).Error; err != nil {
+			return fmt.Errorf("saving transaction: %w", err)
+		}
+
+		if !oldTX.PairKey.Valid || tx.Amount == oldTX.Amount {
+			// is not a paired transaction or amount did not change: skip rest
+			return nil
+		}
+
+		// transaction is paired and amount changed, we need to update the
+		// paired transaction too or it will cause trouble
+
+		if err = db.Model(&Transaction{}).
+			Where("pair_key = ?", oldTX.PairKey.UUID).
+			Update("amount", tx.Amount).
+			Error; err != nil {
+			return fmt.Errorf("updating amount for paired transaction: %w", err)
+		}
+
+		return nil
 	}); err != nil {
 		return fmt.Errorf("updating transaction: %w", err)
 	}
