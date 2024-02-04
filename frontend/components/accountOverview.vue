@@ -228,7 +228,7 @@
       aria-labelledby="transferMoneyModalLabel"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-sm">
+      <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
             <h1
@@ -304,6 +304,19 @@
                   {{ cat.name }}
                 </option>
               </select>
+            </div>
+
+            <div class="mb-3">
+              <label
+                for="transferMoneyModalDescription"
+                class="form-label"
+              >Description</label>
+              <input
+                id="transferMoneyModalDescription"
+                v-model.number="modals.createTransfer.description"
+                type="text"
+                class="form-control"
+              >
             </div>
 
             <div class="mb-3">
@@ -453,6 +466,7 @@ export default {
         createTransfer: {
           amount: 0,
           category: '',
+          description: '',
           from: '',
           to: '',
         },
@@ -549,6 +563,9 @@ export default {
       params.set('amount', this.modals.createTransfer.amount.toFixed(2))
       if (this.modals.createTransfer.category) {
         params.set('category', this.modals.createTransfer.category)
+      }
+      if (this.modals.createTransfer.description) {
+        params.set('description', this.modals.createTransfer.description)
       }
 
       return fetch(`/api/accounts/${this.modals.createTransfer.from}/transfer/${this.modals.createTransfer.to}?${params.toString()}`, {

@@ -54,7 +54,7 @@ func (a apiServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) {
 			})
 
 		case database.AccountTypeCategory:
-			err = a.dbc.TransferMoney(database.UnallocatedMoney, acc.ID, payload.StartingBalance)
+			err = a.dbc.TransferMoney(database.UnallocatedMoney, acc.ID, payload.StartingBalance, "")
 
 		case database.AccountTypeTracking:
 			_, err = a.dbc.CreateTransaction(database.Transaction{
@@ -184,12 +184,12 @@ func (a apiServer) handleTransferMoney(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if category == uuid.Nil {
-		if err = a.dbc.TransferMoney(from, to, amount); err != nil {
+		if err = a.dbc.TransferMoney(from, to, amount, r.URL.Query().Get("description")); err != nil {
 			a.errorResponse(w, err, "transferring money", http.StatusInternalServerError)
 			return
 		}
 	} else {
-		if err = a.dbc.TransferMoneyWithCategory(from, to, amount, category); err != nil {
+		if err = a.dbc.TransferMoneyWithCategory(from, to, amount, r.URL.Query().Get("description"), category); err != nil {
 			a.errorResponse(w, err, "transferring money", http.StatusInternalServerError)
 			return
 		}

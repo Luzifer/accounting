@@ -287,7 +287,7 @@ func (c *Client) MarkAccountReconciled(acc uuid.UUID) (err error) {
 // TransferMoney creates new Transactions for the given account
 // transfer. The account type of the from and to account must match
 // for this to work.
-func (c *Client) TransferMoney(from, to uuid.UUID, amount float64) (err error) {
+func (c *Client) TransferMoney(from, to uuid.UUID, amount float64, description string) (err error) {
 	var fromAcc, toAcc Account
 
 	if fromAcc, err = c.GetAccount(from); err != nil {
@@ -311,7 +311,8 @@ func (c *Client) TransferMoney(from, to uuid.UUID, amount float64) (err error) {
 		txs = []*Transaction{
 			{
 				Time:        time.Now().UTC(),
-				Description: fmt.Sprintf("Transfer: %s → %s", fromAcc.Name, toAcc.Name),
+				Payee:       fmt.Sprintf("Transfer: %s → %s", fromAcc.Name, toAcc.Name),
+				Description: description,
 				Amount:      -amount,
 				Account:     uuid.NullUUID{UUID: from, Valid: true},
 				Category:    uuid.NullUUID{},
@@ -320,7 +321,8 @@ func (c *Client) TransferMoney(from, to uuid.UUID, amount float64) (err error) {
 			},
 			{
 				Time:        time.Now().UTC(),
-				Description: fmt.Sprintf("Transfer: %s → %s", fromAcc.Name, toAcc.Name),
+				Payee:       fmt.Sprintf("Transfer: %s → %s", fromAcc.Name, toAcc.Name),
+				Description: description,
 				Amount:      amount,
 				Account:     uuid.NullUUID{UUID: to, Valid: true},
 				Category:    uuid.NullUUID{},
@@ -334,7 +336,8 @@ func (c *Client) TransferMoney(from, to uuid.UUID, amount float64) (err error) {
 		txs = []*Transaction{
 			{
 				Time:        time.Now().UTC(),
-				Description: fmt.Sprintf("Transfer: %s → %s", fromAcc.Name, toAcc.Name),
+				Payee:       fmt.Sprintf("Transfer: %s → %s", fromAcc.Name, toAcc.Name),
+				Description: description,
 				Amount:      -amount,
 				Account:     uuid.NullUUID{},
 				Category:    uuid.NullUUID{UUID: from, Valid: true},
@@ -343,7 +346,8 @@ func (c *Client) TransferMoney(from, to uuid.UUID, amount float64) (err error) {
 			},
 			{
 				Time:        time.Now().UTC(),
-				Description: fmt.Sprintf("Transfer: %s → %s", fromAcc.Name, toAcc.Name),
+				Payee:       fmt.Sprintf("Transfer: %s → %s", fromAcc.Name, toAcc.Name),
+				Description: description,
 				Amount:      amount,
 				Account:     uuid.NullUUID{},
 				Category:    uuid.NullUUID{UUID: to, Valid: true},
@@ -370,7 +374,7 @@ func (c *Client) TransferMoney(from, to uuid.UUID, amount float64) (err error) {
 
 // TransferMoneyWithCategory creates new Transactions for the given
 // account transfer. This is not possible for category type accounts.
-func (c *Client) TransferMoneyWithCategory(from, to uuid.UUID, amount float64, category uuid.UUID) (err error) {
+func (c *Client) TransferMoneyWithCategory(from, to uuid.UUID, amount float64, description string, category uuid.UUID) (err error) {
 	var fromAcc, toAcc Account
 
 	if fromAcc, err = c.GetAccount(from); err != nil {
@@ -390,7 +394,8 @@ func (c *Client) TransferMoneyWithCategory(from, to uuid.UUID, amount float64, c
 	if err = c.retryTx(func(tx *gorm.DB) (err error) {
 		fromTx := Transaction{
 			Time:        time.Now().UTC(),
-			Description: fmt.Sprintf("Transfer: %s → %s", fromAcc.Name, toAcc.Name),
+			Payee:       fmt.Sprintf("Transfer: %s → %s", fromAcc.Name, toAcc.Name),
+			Description: description,
 			Amount:      -amount,
 			Account:     uuid.NullUUID{UUID: from, Valid: true},
 			Category:    uuid.NullUUID{},
@@ -404,7 +409,8 @@ func (c *Client) TransferMoneyWithCategory(from, to uuid.UUID, amount float64, c
 
 		toTx := Transaction{
 			Time:        time.Now().UTC(),
-			Description: fmt.Sprintf("Transfer: %s → %s", fromAcc.Name, toAcc.Name),
+			Payee:       fmt.Sprintf("Transfer: %s → %s", fromAcc.Name, toAcc.Name),
+			Description: description,
 			Amount:      amount,
 			Account:     uuid.NullUUID{UUID: to, Valid: true},
 			Category:    uuid.NullUUID{},

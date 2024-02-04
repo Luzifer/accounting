@@ -94,7 +94,7 @@ func TestPairKeyRemoval(t *testing.T) {
 	testCheckAcctBal(t, bals, tb2.ID, 0)
 
 	// Transfer some money
-	require.NoError(t, dbc.TransferMoney(tb1.ID, tb2.ID, 500))
+	require.NoError(t, dbc.TransferMoney(tb1.ID, tb2.ID, 500, ""))
 	bals, err = dbc.ListAccountBalances(false)
 	require.NoError(t, err)
 	testCheckAcctBal(t, bals, tb1.ID, -500)
@@ -163,7 +163,7 @@ func TestTransactions(t *testing.T) {
 	testCheckAcctBal(t, bals, UnallocatedMoney, 1000)
 
 	// Lets redistribute the money
-	require.NoError(t, dbc.TransferMoney(UnallocatedMoney, tc.ID, 500))
+	require.NoError(t, dbc.TransferMoney(UnallocatedMoney, tc.ID, 500, ""))
 	bals, err = dbc.ListAccountBalances(false)
 	require.NoError(t, err)
 	testCheckAcctBal(t, bals, tb1.ID, 1000)
@@ -173,7 +173,7 @@ func TestTransactions(t *testing.T) {
 	testCheckAcctBal(t, bals, UnallocatedMoney, 500)
 
 	// Now transfer some money to another budget account
-	require.NoError(t, dbc.TransferMoney(tb1.ID, tb2.ID, 100))
+	require.NoError(t, dbc.TransferMoney(tb1.ID, tb2.ID, 100, ""))
 	bals, err = dbc.ListAccountBalances(false)
 	require.NoError(t, err)
 	testCheckAcctBal(t, bals, tb1.ID, 900)
@@ -183,7 +183,7 @@ func TestTransactions(t *testing.T) {
 	testCheckAcctBal(t, bals, UnallocatedMoney, 500)
 
 	// And some to a tracking account (needs category)
-	require.NoError(t, dbc.TransferMoneyWithCategory(tb1.ID, tt.ID, 100, tc.ID))
+	require.NoError(t, dbc.TransferMoneyWithCategory(tb1.ID, tt.ID, 100, "", tc.ID))
 	bals, err = dbc.ListAccountBalances(false)
 	require.NoError(t, err)
 	testCheckAcctBal(t, bals, tb1.ID, 800)
