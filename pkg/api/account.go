@@ -177,7 +177,7 @@ func (a apiServer) handleTransferMoney(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.URL.Query().Has("category") {
-		if category, err = uuid.Parse(mux.Vars(r)["category"]); err != nil {
+		if category, err = uuid.Parse(r.URL.Query().Get("category")); err != nil {
 			a.errorResponse(w, err, "parsing category", http.StatusBadRequest)
 			return
 		}
