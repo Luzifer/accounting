@@ -1,3 +1,8 @@
+# 0.5.0 / 2024-02-06
+
+  * Add description to money transfers
+  * Fix: Broken category ID parsing for money transfers
+
 # 0.4.0 / 2024-02-03
 
   * Move creation of starting balances to backend
