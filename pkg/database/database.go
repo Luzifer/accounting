@@ -500,7 +500,8 @@ func (c *Client) UpdateTransaction(txID uuid.UUID, tx Transaction) (err error) {
 
 		if err = db.Model(&Transaction{}).
 			Where("pair_key = ?", oldTX.PairKey.UUID).
-			Update("amount", tx.Amount).
+			Where("id <> ?", oldTX.ID).
+			Update("amount", -tx.Amount).
 			Error; err != nil {
 			return fmt.Errorf("updating amount for paired transaction: %w", err)
 		}
