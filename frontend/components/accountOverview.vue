@@ -111,6 +111,16 @@
               </li>
               <li>
                 <button
+                  class="dropdown-item"
+                  :disabled="selectedTx.length < 1"
+                  @click="clearToday"
+                >
+                  <i class="fas fa-fw fa-copyright mr-1" />
+                  Clear Today
+                </button>
+              </li>
+              <li>
+                <button
                   v-shortkey="['del']"
                   class="dropdown-item text-danger"
                   :disabled="selectedTx.length < 1"
@@ -484,6 +494,22 @@ export default {
   methods: {
     classFromNumber,
 
+    clearToday() {
+      return this.patchSelected([
+        {
+          op: 'replace',
+          path: '/time',
+          value: new Date(new Date().toISOString()
+            .split('T')[0]),
+        },
+        {
+          op: 'replace',
+          path: '/cleared',
+          value: true,
+        },
+      ])
+    },
+
     deleteSelected() {
       const actions = []
       for (const id of this.selectedTx) {
@@ -536,22 +562,26 @@ export default {
     },
 
     moveToToday() {
+      return this.patchSelected([
+        {
+          op: 'replace',
+          path: '/time',
+          value: new Date(new Date().toISOString()
+            .split('T')[0]),
+        },
+      ])
+    },
+
+    patchSelected(patchset = []) {
       const actions = []
       for (const id of this.selectedTx) {
         actions.push(fetch(`/api/transactions/${id}`, {
-          body: JSON.stringify([
-            {
-              op: 'replace',
-              path: '/time',
-              value: new Date(new Date().toISOString()
-                .split('T')[0]),
-            },
-          ]),
+          body: JSON.stringify(patchset),
           method: 'PATCH',
         }))
       }
 
-      Promise.all(actions)
+      return Promise.all(actions)
         .then(() => {
           this.$emit('update-accounts')
           this.fetchTransactions()
