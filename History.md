@@ -1,3 +1,8 @@
+# 0.6.0 / 2024-02-09
+
+  * Add "clear today" functionality
+  * Fix: Paired transactions must be updated with negative sum
+
 # 0.5.0 / 2024-02-06
 
   * Add description to money transfers
