@@ -11,6 +11,9 @@
         @keyup.enter="$refs.payee.focus()"
       >
     </td>
+    <td v-if="accountIsCategory">
+      {{ accountIdToName[edit.account] }}
+    </td>
     <td>
       <input
         ref="payee"
@@ -75,6 +78,14 @@ import { responseToJSON } from '../helpers'
 
 export default {
   computed: {
+    accountIdToName() {
+      return Object.fromEntries(this.accounts.map(acc => [acc.id, acc.name]))
+    },
+
+    accountIsCategory() {
+      return this.account.type === 'category'
+    },
+
     categories() {
       const cats = this.accounts.filter(acc => acc.type === 'category')
       cats.sort((a, b) => a.name.localeCompare(b.name))

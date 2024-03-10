@@ -63,7 +63,13 @@
                   {{ formatNumber(allocatedByCategory[cat.id] || 0) }} €
                 </td>
                 <td :class="classFromNumber(activityByCategory[cat.id] || 0, ['text-end'])">
-                  {{ formatNumber(activityByCategory[cat.id] || 0) }} €
+                  <router-link
+                    class="text-white text-decoration-none"
+                    :to="{ name: 'account-transactions', params: { accountId: cat.id }}"
+                    title="List Transactions"
+                  >
+                    {{ formatNumber(activityByCategory[cat.id] || 0) }} €
+                  </router-link>
                 </td>
                 <td class="text-end">
                   <a

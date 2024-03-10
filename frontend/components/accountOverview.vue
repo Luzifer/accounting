@@ -58,6 +58,7 @@
             <button
               v-shortkey.once="['ctrl', 'alt', 'n']"
               class="btn btn-primary"
+              :disabled="accountIsCategory"
               @click="showAddTransaction = !showAddTransaction"
               @shortkey="showAddTransaction = !showAddTransaction"
             >
@@ -66,6 +67,7 @@
             </button>
             <button
               class="btn btn-primary"
+              :disabled="accountIsCategory"
               data-bs-toggle="modal"
               data-bs-target="#transferMoneyModal"
             >
@@ -75,6 +77,7 @@
 
             <button
               class="btn btn-success"
+              :disabled="accountIsCategory"
               @click="markAccountReconciled"
             >
               <i class="fas fa-fw fa-square-check mr-1" />
@@ -150,6 +153,9 @@
                 <th class="minimized-column">
                   Date
                 </th>
+                <th v-if="accountIsCategory">
+                  Account
+                </th>
                 <th>Payee</th>
                 <th v-if="account.type !== 'tracking'">
                   Category
@@ -177,7 +183,7 @@
               >
                 <tr
                   v-if="tx.id !== editedTxId"
-                  :key="tx.id"
+                  :key="`display-${tx.id}`"
                   @dblclick="editTx(tx.id)"
                 >
                   <td>
@@ -188,6 +194,9 @@
                   </td>
                   <td class="minimized-column">
                     {{ new Date(tx.time).toLocaleDateString() }}
+                  </td>
+                  <td v-if="accountIsCategory">
+                    {{ accountIdToName[tx.account] }}
                   </td>
                   <td>{{ tx.payee }}</td>
                   <td v-if="account.type !== 'tracking'">
@@ -216,7 +225,7 @@
                 </tr>
                 <tx-editor
                   v-else
-                  :key="tx.id"
+                  :key="`editor-${tx.id}`"
                   :account="account"
                   :accounts="accounts"
                   :edit="tx"
@@ -389,6 +398,10 @@ export default {
 
     accountIdToName() {
       return Object.fromEntries(this.accounts.map(acc => [acc.id, acc.name]))
+    },
+
+    accountIsCategory() {
+      return this.account.type === 'category'
     },
 
     accountTypes() {
