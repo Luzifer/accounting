@@ -341,7 +341,7 @@ func (c *Client) TransferMoney(from, to uuid.UUID, amount float64, description s
 				Amount:      -amount,
 				Account:     uuid.NullUUID{},
 				Category:    uuid.NullUUID{UUID: from, Valid: true},
-				Cleared:     false,
+				Cleared:     true,
 				PairKey:     uuid.NullUUID{UUID: pairKey, Valid: true},
 			},
 			{
@@ -351,7 +351,7 @@ func (c *Client) TransferMoney(from, to uuid.UUID, amount float64, description s
 				Amount:      amount,
 				Account:     uuid.NullUUID{},
 				Category:    uuid.NullUUID{UUID: to, Valid: true},
-				Cleared:     false,
+				Cleared:     true,
 				PairKey:     uuid.NullUUID{UUID: pairKey, Valid: true},
 			},
 		}
