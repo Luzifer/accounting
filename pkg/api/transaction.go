@@ -196,7 +196,7 @@ func (a apiServer) handleTransactionJSONPatch(txID uuid.UUID, w http.ResponseWri
 		return
 	}
 
-	if reqBody.Len() < 2 { //nolint:gomnd
+	if reqBody.Len() < 2 { //nolint:mnd
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}

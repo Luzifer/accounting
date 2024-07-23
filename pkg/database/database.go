@@ -187,7 +187,7 @@ func (c *Client) ListAccountBalances(showHidden bool) (a []AccountBalance, err e
 
 			if v != nil {
 				// Fix database doing e-15 stuff by rounding to full cents
-				ab.Balance = math.Round(*v*100) / 100 //nolint:gomnd
+				ab.Balance = math.Round(*v*100) / 100 //nolint:mnd
 			}
 
 			a = append(a, ab)
@@ -473,7 +473,7 @@ func (c *Client) UpdateTransaction(txID uuid.UUID, tx Transaction) (err error) {
 		var oldTX Transaction
 		if err := db.First(&oldTX, "id = ?", txID).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return backoff.NewErrCannotRetry(fmt.Errorf("fetching old transaction: %w", err)) //nolint:wrapcheck
+				return backoff.NewErrCannotRetry(fmt.Errorf("fetching old transaction: %w", err))
 			}
 			return fmt.Errorf("fetching old transaction: %w", err)
 		}

@@ -16,7 +16,7 @@ var (
 	UnallocatedMoney = makeConstAcctID(1)
 	// StartingBalance is a category UUID which is automatically created
 	// and hidden during database migration and used in frontend as constant
-	StartingBalance = makeConstAcctID(2) //nolint:gomnd
+	StartingBalance = makeConstAcctID(2) //nolint:mnd
 
 	invalidAcc = makeConstAcctID(math.MaxUint32)
 
