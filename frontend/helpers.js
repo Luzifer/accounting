@@ -12,15 +12,15 @@ export function formatNumber(number, thousandSep = ' ', decimalSep = '.', places
     return result + number.toFixed(places)
   }
 
-  let place = Math.ceil(Math.log10(number))
+  const place = Math.floor(Math.log10(number))
 
   if (place < 3) {
     return result + number.toFixed(places).replace('.', decimalSep)
   }
 
-  while (place--) {
-    result += number / 10 ** place % 10 | 0
-    if (place > 0 && place % 3 === 0) {
+  for (let i = place; i >= 0; i--) {
+    result += number / 10 ** i % 10 | 0
+    if (i > 0 && i % 3 === 0) {
       result += thousandSep
     }
   }
