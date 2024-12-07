@@ -1,3 +1,13 @@
+# 0.7.0 / 2024-12-07
+
+  * Improvements
+    * Add category-activity transaction view
+
+  * Bugfixes
+    * Fix number formatting for 1000, 10000, ...
+    * Fix: Auto-clear money transfers between categories
+    * Update dependencies
+
 # 0.6.0 / 2024-02-09
 
   * Add "clear today" functionality
