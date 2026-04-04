@@ -6,13 +6,13 @@
     >
       <accounts-sidebar
         :accounts="accounts"
-        @updateAccounts="fetchAccounts"
+        @update-accounts="fetchAccounts"
       />
     </div>
     <div class="d-flex flex-column flex-grow-1 py-3">
       <router-view
         :accounts="accounts"
-        @updateAccounts="fetchAccounts"
+        @update-accounts="fetchAccounts"
       />
     </div>
   </div>

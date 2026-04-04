@@ -174,8 +174,8 @@
                 v-if="showAddTransaction"
                 :account="account"
                 :accounts="accounts"
-                @editCancelled="showAddTransaction = false"
-                @editSaved="txSaved"
+                @edit-cancelled="showAddTransaction = false"
+                @edit-saved="txSaved"
               />
 
               <template
@@ -229,8 +229,8 @@
                   :account="account"
                   :accounts="accounts"
                   :edit="tx"
-                  @editCancelled="editedTxId = null"
-                  @editSaved="txSaved"
+                  @edit-cancelled="editedTxId = null"
+                  @edit-saved="txSaved"
                 />
               </template>
             </tbody>
@@ -373,8 +373,8 @@
 
     <account-editor
       :account="editedAcc"
-      @editClosed="editedAccId = null"
-      @editComplete="$emit('update-accounts'); editedAccId = null"
+      @edit-closed="editedAccId = null"
+      @edit-complete="$emit('update-accounts'); editedAccId = null"
     />
   </div>
 </template>

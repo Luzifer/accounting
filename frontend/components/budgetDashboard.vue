@@ -188,8 +188,8 @@
 
     <account-editor
       :account="editedAcc"
-      @editClosed="editedAccId = null"
-      @editComplete="$emit('update-accounts'); editedAccId = null"
+      @edit-closed="editedAccId = null"
+      @edit-complete="$emit('update-accounts'); editedAccId = null"
     />
   </div>
 </template>

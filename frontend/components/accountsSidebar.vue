@@ -166,6 +166,8 @@ export default {
     }
   },
 
+  emits: ['update-accounts'],
+
   methods: {
     addAccount() {
       return fetch('/api/accounts', {
