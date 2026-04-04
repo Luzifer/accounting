@@ -1,6 +1,5 @@
----
-
 name: test-and-build
+
 on:
   push:
     branches: ['*']
@@ -17,7 +16,7 @@ jobs:
         shell: bash
 
     container:
-      image: luzifer/archlinux
+      image: ghcr.io/luzifer-docker/action-env:master@sha256:312b68ae78b085502a55cb048294f318573458fd1bec973e6ccac02c1a68b84e
       env:
         CGO_ENABLED: 0
         GOPATH: /go
@@ -25,28 +24,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Enable custom AUR package repo
-        run: echo -e "[luzifer]\nSigLevel = Never\nServer = https://archrepo.hub.luzifer.io/\$arch" >>/etc/pacman.conf
-
-      - name: Install required packages
-        run: |
-          pacman -Syy --noconfirm \
-            awk \
-            curl \
-            diffutils \
-            git \
-            go \
-            golangci-lint-bin \
-            make \
-            nodejs-lts-hydrogen \
-            npm \
-            tar \
-            trivy \
-            unzip \
-            which \
-            zip
-
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Marking workdir safe
         run: git config --global --add safe.directory /__w/accounting/accounting
@@ -79,4 +57,40 @@ jobs:
           draft: false
           generateReleaseNotes: false
 
-...
+  docker-publish:
+    needs: [test-and-build]
+
+    defaults:
+      run:
+        shell: bash
+
+    permissions:
+      packages: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          show-progress: false
+
+      - name: Log into registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
+        with:
+          images: ghcr.io/luzifer/password
+
+      - name: Build and push
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
