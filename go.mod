@@ -2,7 +2,7 @@ module git.luzifer.io/luzifer/accounting
 
 go 1.22.0
 
-toolchain go1.23.4
+toolchain go1.26.1
 
 require (
 	github.com/Luzifer/go_helpers/v2 v2.25.0
@@ -11,8 +11,8 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
 	github.com/pkg/errors v0.9.1
-	github.com/sirupsen/logrus v1.9.3
-	github.com/stretchr/testify v1.8.4
+	github.com/sirupsen/logrus v1.9.4
+	github.com/stretchr/testify v1.10.0
 	gopkg.in/evanphx/json-patch.v5 v5.9.0
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/gorm v1.25.12
