@@ -49,6 +49,10 @@ func RegisterHandler(apiRouter *mux.Router, dbc *database.Client, logger *logrus
 		Methods(http.MethodPut)
 
 	apiRouter.
+		HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusNoContent) }).
+		Methods(http.MethodGet)
+
+	apiRouter.
 		HandleFunc("/transactions", as.handleListTransactions).
 		Methods(http.MethodGet)
 	apiRouter.

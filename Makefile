@@ -3,7 +3,7 @@ PORT := 5000
 default: build
 
 build: export CGO_ENABLED=0
-build: frontend
+build:
 	go build \
 		-ldflags "-s -w -X main.version=$(shell git describe --tags --always || echo dev)" \
 		-mod=readonly \
