@@ -13,7 +13,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.4
 	github.com/stretchr/testify v1.11.1
-	gopkg.in/evanphx/json-patch.v5 v5.9.0
+	gopkg.in/evanphx/json-patch.v5 v5.9.11
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/gorm v1.31.1
 )
