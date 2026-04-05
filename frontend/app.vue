@@ -21,9 +21,9 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import accountsSidebar from './accountsSidebar.vue'
-import { responseToJSON } from '../helpers'
-import type { Account } from '../types'
+import accountsSidebar from 'components/accountsSidebar.vue'
+import { responseToJSON } from './helpers'
+import type { Account } from './types'
 
 export default defineComponent({
   components: { accountsSidebar },

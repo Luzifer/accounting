@@ -199,9 +199,9 @@
 import { defineComponent, type PropType } from 'vue'
 import { Modal } from 'bootstrap'
 
-import accountEditor from './accountEditor.vue'
+import accountEditor from '../components/accountEditor.vue'
 import { classFromNumber, formatNumber, responseToJSON } from '../helpers'
-import rangeSelector from './rangeSelector.vue'
+import rangeSelector from '../components/rangeSelector.vue'
 import { unallocatedMoneyAcc } from '../constants'
 import type { Account, DateRange, Transaction } from '../types'
 

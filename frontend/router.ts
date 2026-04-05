@@ -1,8 +1,8 @@
 /* eslint-disable sort-imports */
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 
-import accountOverview from './components/accountOverview.vue'
-import budgetDashboard from './components/budgetDashboard.vue'
+import accountOverview from './views/accountOverview.vue'
+import budgetDashboard from './views/budgetDashboard.vue'
 
 const routes: RouteRecordRaw[] = [
   { component: budgetDashboard, name: 'budget', path: '/' },

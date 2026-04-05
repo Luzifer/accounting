@@ -4,7 +4,7 @@ import VueShortkey from 'vue3-shortkey'
 
 import './style.scss'
 
-import appMain from './components/app.vue'
+import appMain from './app.vue'
 import router from './router'
 
 const app = createApp(appMain)
