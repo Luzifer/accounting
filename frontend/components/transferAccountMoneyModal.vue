@@ -220,8 +220,8 @@ export default defineComponent({
         amount: 0,
         category: '',
         description: '',
-        from: '',
-        to: this.accountId,
+        from: this.accountId,
+        to: '',
       }
     },
 
