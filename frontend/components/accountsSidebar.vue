@@ -23,119 +23,23 @@
 
     <button
       class="btn btn-sm w-100"
-      data-bs-toggle="modal"
-      data-bs-target="#createAccountModal"
+      @click="openCreateAccountModal"
     >
       <i class="fas fa-fw fa-circle-plus mr-1" />
       Add Account
     </button>
-
-    <div
-      id="createAccountModal"
-      ref="createAccountModal"
-      class="modal fade"
-      tabindex="-1"
-      aria-labelledby="createAccountModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1
-              id="createAccountModalLabel"
-              class="modal-title fs-5"
-            >
-              Add Account
-            </h1>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            />
-          </div>
-          <div class="modal-body">
-            <div class="mb-3">
-              <label
-                for="createAccountModalName"
-                class="form-label"
-              >Account Name</label>
-              <input
-                id="createAccountModalName"
-                v-model.trim="modals.addAccount.name"
-                type="text"
-                class="form-control"
-                required
-              >
-            </div>
-            <div class="mb-3">
-              <label
-                for="createAccountModalType"
-                class="form-label"
-              >Account Type</label>
-              <select
-                v-model="modals.addAccount.type"
-                class="form-select"
-              >
-                <option value="budget">
-                  Budget
-                </option>
-                <option value="tracking">
-                  Tracking
-                </option>
-                <option value="category">
-                  Category
-                </option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label
-                for="createAccountModalBalance"
-                class="form-label"
-              >Starting Balance</label>
-              <div class="input-group">
-                <input
-                  id="createAccountModalBalance"
-                  v-model.number="modals.addAccount.startingBalance"
-                  type="number"
-                  step="0.01"
-                  class="form-control"
-                >
-                <span class="input-group-text">€</span>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-primary"
-              @click="addAccount"
-            >
-              <i class="fas fa-fw fa-circle-plus mr-1" />
-              Add
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script lang="ts">
 
 import { defineComponent, type PropType } from 'vue'
-import { Modal } from 'bootstrap'
 
 import accList from './accountsSidebarAccList.vue'
+import createAccountModal from './createAccountModal.vue'
+import modalHost from './modal.vue'
 
-import { formatNumber } from '../helpers'
 import type { Account } from '../types'
-
-interface AddAccountForm {
-  name: string
-  startingBalance: number
-  type: 'budget' | 'category' | 'tracking'
-}
 
 export default defineComponent({
   components: { accList },
@@ -162,47 +66,17 @@ export default defineComponent({
     },
   },
 
-  data() {
-    return {
-      modals: {
-        addAccount: {
-          name: '',
-          startingBalance: 0,
-          type: 'budget',
-        } as AddAccountForm,
-      },
-    }
-  },
-
   emits: ['update-accounts'],
 
   methods: {
-    async addAccount() {
-      await fetch('/api/accounts', {
-        body: JSON.stringify({
-          name: this.modals.addAccount.name,
-          startingBalance: this.modals.addAccount.startingBalance,
-          type: this.modals.addAccount.type,
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
-      })
-
-      this.$emit('update-accounts')
-
-      const modal = Modal.getInstance(this.$refs.createAccountModal as Element)
-      modal?.toggle()
-
-      this.modals.addAccount = {
-        name: '',
-        startingBalance: 0,
-        type: 'budget',
+    async openCreateAccountModal() {
+      try {
+        await modalHost.openModal(createAccountModal)
+        this.$emit('update-accounts')
+      } catch {
+        // Dismissed by user.
       }
     },
-
-    formatNumber,
   },
 
   name: 'AccountingAppSidebar',
