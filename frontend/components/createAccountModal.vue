@@ -93,6 +93,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { Modal } from 'bootstrap'
+import { requestAPI } from '../helpers'
 
 interface AddAccountForm {
   name: string
@@ -122,16 +123,10 @@ export default defineComponent({
 
   methods: {
     async addAccount() {
-      await fetch('/api/accounts', {
-        body: JSON.stringify({
-          name: this.form.name,
-          startingBalance: this.form.startingBalance,
-          type: this.form.type,
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
+      await requestAPI('POST', '/api/accounts', {
+        name: this.form.name,
+        startingBalance: this.form.startingBalance,
+        type: this.form.type,
       })
 
       this.closeReason = 'resolve'

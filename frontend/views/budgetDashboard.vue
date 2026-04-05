@@ -94,7 +94,7 @@ import { defineComponent, type PropType } from 'vue'
 import accountEditor from '../components/accountEditor.vue'
 import modalHost from '../components/modal.vue'
 import transferBudgetCategoryMoneyModal from '../components/transferBudgetCategoryMoneyModal.vue'
-import { classFromNumber, formatNumber, responseToJSON } from '../helpers'
+import { classFromNumber, formatNumber, requestAPI } from '../helpers'
 import rangeSelector from '../components/rangeSelector.vue'
 import { unallocatedMoneyAcc } from '../constants'
 import type { Account, DateRange, Transaction } from '../types'
@@ -193,8 +193,7 @@ export default defineComponent({
       const since = this.timeRange.start.toISOString()
       const until = this.timeRange.end.toISOString()
 
-      const resp = await fetch(`/api/transactions?since=${since}&until=${until}`)
-      const txs = await responseToJSON<Transaction[]>(resp)
+      const txs = await requestAPI<Transaction[]>('GET', `/api/transactions?since=${since}&until=${until}`)
       this.transactions = txs ?? []
     },
 

@@ -41,14 +41,22 @@ export function formatNumber(number: number, thousandSep = ' ', decimalSep = '.'
   return result + decimalSep + number.toFixed(places).split('.')[1]
 }
 
-export function responseToJSON<T>(resp: Response): Promise<null | T> {
+export async function requestAPI<T>(method: string, apiPath: string, payload?: any): Promise<null | T> {
+  const resp = await fetch(apiPath, {
+    body: payload === undefined ? undefined : JSON.stringify(payload),
+    headers: {
+      'content-type': 'application/json',
+    },
+    method,
+  })
+
   if (resp.status > 299) {
     throw new Error(`non-2xx status code: ${resp.status}`)
   }
 
   if (resp.status === 204) {
-    return Promise.resolve(null)
+    return null
   }
 
-  return resp.json() as Promise<T>
+  return await resp.json() as T
 }

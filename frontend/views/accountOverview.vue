@@ -245,7 +245,7 @@ import { defineComponent, type PropType } from 'vue'
 import accountEditor from '../components/accountEditor.vue'
 import modalHost from '../components/modal.vue'
 import transferAccountMoneyModal from '../components/transferAccountMoneyModal.vue'
-import { classFromNumber, formatNumber, responseToJSON } from '../helpers'
+import { classFromNumber, formatNumber, requestAPI } from '../helpers'
 import rangeSelector from '../components/rangeSelector.vue'
 import txEditor from '../components/txEditor.vue'
 import type { Account, DateRange, JsonPatchOperation, Transaction } from '../types'
@@ -336,9 +336,7 @@ export default defineComponent({
     async deleteSelected() {
       const actions = []
       for (const id of this.selectedTx) {
-        actions.push(fetch(`/api/transactions/${id}`, {
-          method: 'DELETE',
-        }))
+        actions.push(requestAPI('DELETE', `/api/transactions/${id}`))
       }
 
       await Promise.all(actions)
@@ -376,8 +374,7 @@ export default defineComponent({
       const since = this.timeRange.start.toISOString()
       const until = this.timeRange.end.toISOString()
 
-      const resp = await fetch(`/api/accounts/${this.accountId}/transactions?since=${since}&until=${until}`)
-      const txs = await responseToJSON<Transaction[]>(resp)
+      const txs = await requestAPI<Transaction[]>('GET', `/api/accounts/${this.accountId}/transactions?since=${since}&until=${until}`)
       this.transactions = txs ?? []
       this.selectedTxRaw = {}
     },
@@ -385,16 +382,12 @@ export default defineComponent({
     formatNumber,
 
     async markAccountReconciled() {
-      await fetch(`/api/accounts/${this.accountId}/reconcile`, {
-        method: 'PUT',
-      })
+      await requestAPI('PUT', `/api/accounts/${this.accountId}/reconcile`)
       await this.fetchTransactions()
     },
 
     async markCleared(txId: string, cleared: boolean) {
-      await fetch(`/api/transactions/${txId}?cleared=${cleared}`, {
-        method: 'PATCH',
-      })
+      await requestAPI('PATCH', `/api/transactions/${txId}?cleared=${cleared}`)
       await this.fetchTransactions()
     },
 
@@ -425,10 +418,7 @@ export default defineComponent({
     async patchSelected(patchset: JsonPatchOperation[] = []) {
       const actions = []
       for (const id of this.selectedTx) {
-        actions.push(fetch(`/api/transactions/${id}`, {
-          body: JSON.stringify(patchset),
-          method: 'PATCH',
-        }))
+        actions.push(requestAPI('PATCH', `/api/transactions/${id}`, patchset))
       }
 
       await Promise.all(actions)

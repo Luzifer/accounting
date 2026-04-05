@@ -26,7 +26,7 @@ import { defineComponent } from 'vue'
 
 import accountsSidebar from 'components/accountsSidebar.vue'
 import modalHost from 'components/modal.vue'
-import { responseToJSON } from './helpers'
+import { requestAPI } from './helpers'
 import type { Account } from './types'
 
 export default defineComponent({
@@ -44,8 +44,7 @@ export default defineComponent({
 
   methods: {
     async fetchAccounts() {
-      const resp = await fetch('/api/accounts?with-balances')
-      const data = await responseToJSON<Account[]>(resp)
+      const data = await requestAPI<Account[]>('GET', '/api/accounts?with-balances')
       this.accounts = data ?? []
     },
   },

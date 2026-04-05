@@ -137,6 +137,7 @@ import { defineComponent, type PropType } from 'vue'
 import { Modal } from 'bootstrap'
 
 import type { Account } from '../types'
+import { requestAPI } from '../helpers'
 
 interface TransferAccountMoneyForm {
   amount: number
@@ -235,9 +236,7 @@ export default defineComponent({
         params.set('description', this.form.description)
       }
 
-      await fetch(`/api/accounts/${this.form.from}/transfer/${this.form.to}?${params.toString()}`, {
-        method: 'PUT',
-      })
+      await requestAPI('PUT', `/api/accounts/${this.form.from}/transfer/${this.form.to}?${params.toString()}`)
 
       this.closeReason = 'resolve'
       this.modal?.hide()

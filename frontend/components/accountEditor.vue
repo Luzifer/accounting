@@ -76,7 +76,7 @@
 import { defineComponent } from 'vue'
 import { Modal } from 'bootstrap'
 
-import { responseToJSON } from '../helpers'
+import { requestAPI } from '../helpers'
 import type { Account } from '../types'
 
 interface AccountEditForm {
@@ -126,11 +126,7 @@ export default defineComponent({
         return
       }
 
-      const resp = await fetch(`/api/accounts/${this.account.id}?${update.toString()}`, {
-        method: 'PATCH',
-      })
-
-      await responseToJSON(resp)
+      await requestAPI('PATCH', `/api/accounts/${this.account.id}?${update.toString()}`)
       this.closeReason = 'resolve'
       this.modal?.hide()
     },

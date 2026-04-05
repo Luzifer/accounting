@@ -78,7 +78,7 @@
 import { defineComponent, type PropType } from 'vue'
 
 import type { Account, Transaction } from '../types'
-import { responseToJSON } from '../helpers'
+import { requestAPI } from '../helpers'
 
 interface TransactionForm {
   amount: number | string
@@ -129,25 +129,18 @@ export default defineComponent({
     },
 
     async saveTransaction() {
-      const body = JSON.stringify({
+      const body = {
         ...this.form,
         account: this.account.id,
         category: this.form.category || null,
         time: new Date(this.form.date),
-      })
-
-      const headers = {
-        'Content-Type': 'application/json',
       }
 
-      let resp: Response
       if (this.edit?.id) {
-        resp = await fetch(`/api/transactions/${this.edit.id}`, { body, headers, method: 'PUT' })
+        await requestAPI('PUT', `/api/transactions/${this.edit.id}`, body)
       } else {
-        resp = await fetch('/api/transactions', { body, headers, method: 'POST' })
+        await requestAPI('POST', '/api/transactions', body)
       }
-
-      await responseToJSON(resp)
       this.$emit('editSaved')
 
       if (!this.edit) {
