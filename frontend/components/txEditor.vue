@@ -30,7 +30,8 @@
         v-model="form.category"
         class="form-select form-select-sm"
         @keyup.esc="sendCancel"
-        @keyup.enter="focusRef('description')"
+        @keydown.enter.prevent="() => {}"
+        @keyup.enter.prevent="focusRef('description')"
       >
         <option
           v-for="cat in categories"
