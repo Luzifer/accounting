@@ -9,7 +9,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/Luzifer/go_helpers/v2/backoff"
+	"github.com/Luzifer/go_helpers/backoff"
 	"github.com/glebarez/sqlite"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
