@@ -72,26 +72,35 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
 import { Modal } from 'bootstrap'
-import { responseToJSON } from '../helpers'
 
-export default {
+import { responseToJSON } from '../helpers'
+import type { Account } from '../types'
+
+interface AccountEditForm {
+  balance: number
+  hidden: boolean
+  name: string
+}
+
+export default defineComponent({
   data() {
     return {
       form: {
         balance: 0,
         hidden: false,
         name: '',
-      },
+      } as AccountEditForm,
     }
   },
 
   emits: ['editClosed', 'editComplete'],
 
   methods: {
-    updateAccount() {
-      if (!this.account) {
+    async updateAccount() {
+      if (this.account === null) {
         return
       }
 
@@ -110,33 +119,35 @@ export default {
         return
       }
 
-      return fetch(`/api/accounts/${this.account.id}?${update.toString()}`, {
+      const resp = await fetch(`/api/accounts/${this.account.id}?${update.toString()}`, {
         method: 'PATCH',
       })
-        .then(responseToJSON)
-        .then(() => this.$emit('editComplete'))
+
+      await responseToJSON(resp)
+      this.$emit('editComplete')
     },
   },
 
   mounted() {
-    this.$refs.editAccountModal
-      .addEventListener('hidden.bs.modal', () => this.$emit('editClosed'))
+    const modalElement = this.$refs.editAccountModal as HTMLElement
+    modalElement.addEventListener('hidden.bs.modal', () => this.$emit('editClosed'))
   },
 
   name: 'AccountingAppAccountEditor',
 
   props: {
     account: {
-      default: () => ({}),
+      default: null,
       required: false,
-      type: Object,
+      type: Object as PropType<Account | null>,
     },
   },
 
   watch: {
-    account(to) {
+    account(to: Account | null) {
+      const modal = Modal.getOrCreateInstance(this.$refs.editAccountModal as Element)
       if (!to) {
-        Modal.getOrCreateInstance(this.$refs.editAccountModal).hide()
+        modal.hide()
         return
       }
 
@@ -146,8 +157,8 @@ export default {
         name: to.name,
       }
 
-      Modal.getOrCreateInstance(this.$refs.editAccountModal).show()
+      modal.show()
     },
   },
-}
+})
 </script>

@@ -2,13 +2,13 @@ import esbuild from 'esbuild'
 import { sassPlugin } from 'esbuild-sass-plugin'
 import vuePlugin from 'esbuild-plugin-vue3'
 
-esbuild.build({
+const buildOpts = {
   assetNames: '[name]-[hash]',
   bundle: true,
   define: {
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'dev'),
   },
-  entryPoints: ['frontend/main.js'],
+  entryPoints: ['frontend/main.ts'],
   legalComments: 'none',
   loader: {
     '.ttf': 'file',
@@ -21,10 +21,14 @@ esbuild.build({
     vuePlugin(),
   ],
   target: [
-    'chrome87',
-    'edge87',
+    'chrome109',
+    'edge132',
     'es2020',
-    'firefox84',
-    'safari14',
+    'firefox115',
+    'safari16',
   ],
-})
+}
+
+export { buildOpts }
+
+esbuild.build(buildOpts)

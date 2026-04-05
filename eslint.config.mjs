@@ -97,7 +97,7 @@ export default [
       'require-atomic-updates': ['error'],
       'require-await': ['error'],
       'semi': ['error', 'never'],
-      'sort-imports': ['error', { ignoreCase: true, ignoreDeclarationSort: false, ignoreMemberSort: false }],
+      'sort-imports': ['off', { ignoreCase: true, ignoreDeclarationSort: false, ignoreMemberSort: false }],
       'sort-keys': ['error', 'asc', { caseSensitive: true, natural: false }],
       'space-before-blocks': ['error', 'always'],
       'space-before-function-paren': ['error', 'never'],

@@ -1,5 +1,5 @@
-export function formatNumber(number, thousandSep = ' ', decimalSep = '.', places = 2) {
-  if (isNaN(number)) {
+export function formatNumber(number: number, thousandSep = ' ', decimalSep = '.', places = 2): number | string {
+  if (Number.isNaN(number)) {
     return number
   }
 
@@ -28,15 +28,7 @@ export function formatNumber(number, thousandSep = ' ', decimalSep = '.', places
   return result + decimalSep + number.toFixed(places).split('.')[1]
 }
 
-/**
- * Common code to derive a class from a numeric value
- *
- * @param {Number} num The value to choose the class from
- * @param {Array} extraClasses Extra classes to add to the output string
- * @param {String | null} positiveClass Class to use on positive numbers
- * @returns {String} Space separated combined class list
- */
-export function classFromNumber(num, extraClasses = [], positiveClass = null) {
+export function classFromNumber(num: number, extraClasses: string[] = [], positiveClass: null | string = null): string {
   const classes = extraClasses || []
   if (num < 0) {
     classes.push('text-danger')
@@ -49,20 +41,14 @@ export function classFromNumber(num, extraClasses = [], positiveClass = null) {
   return classes.join(' ')
 }
 
-/**
- * Parses the response to JSON and throws an exception in case the
- * request was non-2xx
- *
- * @param {Response} resp Response from a `fetch` request
- */
-export function responseToJSON(resp) {
+export function responseToJSON<T>(resp: Response): Promise<null | T> {
   if (resp.status > 299) {
     throw new Error(`non-2xx status code: ${resp.status}`)
   }
 
   if (resp.status === 204) {
-    return null
+    return Promise.resolve(null)
   }
 
-  return resp.json()
+  return resp.json() as Promise<T>
 }

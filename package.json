@@ -1,4 +1,9 @@
 {
+  "scripts": {
+    "build": "node ci/build.mjs",
+    "lint": "eslint --fix frontend",
+    "typecheck": "tsc --noEmit"
+  },
   "devDependencies": {
     "@babel/eslint-parser": "7.28.6",
     "@types/bootstrap": "5.2.10",

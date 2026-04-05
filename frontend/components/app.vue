@@ -18,32 +18,34 @@
   </div>
 </template>
 
-<script>
-import accountsSidebar from './accountsSidebar.vue'
+<script lang="ts">
+import { defineComponent } from 'vue'
 
-export default {
+import accountsSidebar from './accountsSidebar.vue'
+import { responseToJSON } from '../helpers'
+import type { Account } from '../types'
+
+export default defineComponent({
   components: { accountsSidebar },
 
   created() {
-    this.fetchAccounts()
+    void this.fetchAccounts()
   },
 
   data() {
     return {
-      accounts: [],
+      accounts: [] as Account[],
     }
   },
 
   methods: {
-    fetchAccounts() {
-      return fetch('/api/accounts?with-balances')
-        .then(resp => resp.json())
-        .then(data => {
-          this.accounts = data
-        })
+    async fetchAccounts() {
+      const resp = await fetch('/api/accounts?with-balances')
+      const data = await responseToJSON<Account[]>(resp)
+      this.accounts = data ?? []
     },
   },
 
   name: 'AccountingAppMain',
-}
+})
 </script>

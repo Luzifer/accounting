@@ -196,11 +196,11 @@
                     {{ new Date(tx.time).toLocaleDateString() }}
                   </td>
                   <td v-if="accountIsCategory">
-                    {{ accountIdToName[tx.account] }}
+                    {{ accountIdToName[tx.account!] }}
                   </td>
                   <td>{{ tx.payee }}</td>
                   <td v-if="account.type !== 'tracking'">
-                    {{ accountIdToName[tx.category] }}
+                    {{ accountIdToName[tx.category!] }}
                   </td>
                   <td>{{ tx.description }}</td>
                   <td :class="classFromNumber(tx.amount, ['minimized-amount', 'text-end'])">
@@ -379,61 +379,79 @@
   </div>
 </template>
 
-<script>
-/* eslint-disable sort-imports */
+<script lang="ts">
+
+import { defineComponent, type PropType } from 'vue'
 import { Modal } from 'bootstrap'
 
 import accountEditor from './accountEditor.vue'
-import { classFromNumber, formatNumber } from '../helpers'
+import { classFromNumber, formatNumber, responseToJSON } from '../helpers'
 import rangeSelector from './rangeSelector.vue'
 import txEditor from './txEditor.vue'
+import type { Account, DateRange, JsonPatchOperation, Transaction } from '../types'
 
-export default {
+interface OverviewTransferForm {
+  amount: number
+  category: string
+  description: number | string
+  from: string
+  to: string
+}
+
+const emptyAccount: Account = {
+  balance: 0,
+  hidden: false,
+  id: '',
+  name: '',
+  type: 'budget',
+}
+
+export default defineComponent({
   components: { accountEditor, rangeSelector, txEditor },
 
   computed: {
-    account() {
-      return this.accounts.filter(acc => acc.id === this.accountId)[0] || {}
+    account(): Account {
+      return this.accounts.filter(acc => acc.id === this.accountId)[0] || emptyAccount
     },
 
-    accountIdToName() {
+    accountIdToName(): Record<string, string> {
       return Object.fromEntries(this.accounts.map(acc => [acc.id, acc.name]))
     },
 
-    accountIsCategory() {
+    accountIsCategory(): boolean {
       return this.account.type === 'category'
     },
 
-    accountTypes() {
+    accountTypes(): Record<string, string> {
       return Object.fromEntries(this.accounts.map(acc => [acc.id, acc.type]))
     },
 
-    balanceUncleared() {
+    balanceUncleared(): number {
       return this.transactions
         .filter(tx => !tx.cleared)
         .reduce((sum, tx) => sum + tx.amount, 0)
     },
 
-    categories() {
+    categories(): Account[] {
       const cats = this.accounts.filter(acc => acc.type === 'category')
       cats.sort((a, b) => a.name.localeCompare(b.name))
       return cats
     },
 
-    editedAcc() {
+    editedAcc(): Account | null {
       if (!this.editedAccId) {
         return null
       }
       return this.accounts.filter(acc => acc.id === this.editedAccId)[0] || null
     },
 
-    selectedTx() {
+    selectedTx(): string[] {
       return Object.entries(this.selectedTxRaw)
         .filter(e => e[1])
         .map(e => e[0])
     },
 
-    sortedTransactions() {
+    sortedTransactions(): Transaction[] {
       const tx = [...this.transactions]
       tx.sort((b, a) => {
         if (a.cleared && !b.cleared) {
@@ -447,11 +465,13 @@ export default {
       return tx
     },
 
-    transferCategoryActive() {
-      return this.modals.createTransfer.from && this.modals.createTransfer.to && this.accountTypes[this.modals.createTransfer.from] !== this.accountTypes[this.modals.createTransfer.to]
+    transferCategoryActive(): boolean {
+      return Boolean(this.modals.createTransfer.from
+        && this.modals.createTransfer.to
+        && this.accountTypes[this.modals.createTransfer.from] !== this.accountTypes[this.modals.createTransfer.to])
     },
 
-    transferModalValid() {
+    transferModalValid(): boolean {
       if (!this.modals.createTransfer.from || !this.modals.createTransfer.to) {
         return false
       }
@@ -473,7 +493,7 @@ export default {
       return true
     },
 
-    transferableAccounts() {
+    transferableAccounts(): Account[] {
       const accs = (this.accounts || []).filter(acc => acc.type !== 'category')
       accs.sort((a, b) => a.name.localeCompare(b.name))
       return accs
@@ -482,8 +502,8 @@ export default {
 
   data() {
     return {
-      editedAccId: null,
-      editedTxId: null,
+      editedAccId: null as null | string,
+      editedTxId: null as null | string,
 
       modals: {
         createTransfer: {
@@ -492,13 +512,13 @@ export default {
           description: '',
           from: '',
           to: '',
-        },
+        } as OverviewTransferForm,
       },
 
-      selectedTxRaw: {},
+      selectedTxRaw: {} as Record<string, boolean>,
       showAddTransaction: false,
-      timeRange: {},
-      transactions: [],
+      timeRange: {} as DateRange,
+      transactions: [] as Transaction[],
     }
   },
 
@@ -523,7 +543,7 @@ export default {
       ])
     },
 
-    deleteSelected() {
+    async deleteSelected() {
       const actions = []
       for (const id of this.selectedTx) {
         actions.push(fetch(`/api/transactions/${id}`, {
@@ -531,47 +551,47 @@ export default {
         }))
       }
 
-      Promise.all(actions)
-        .then(() => {
-          this.$emit('update-accounts')
-          this.fetchTransactions()
-        })
+      await Promise.all(actions)
+      this.$emit('update-accounts')
+      await this.fetchTransactions()
     },
 
     editSelected() {
       this.editTx(this.selectedTx[0])
     },
 
-    editTx(txId) {
+    editTx(txId: string) {
       this.editedTxId = txId
     },
 
-    fetchTransactions() {
+    async fetchTransactions() {
+      if (!this.timeRange.start || !this.timeRange.end) {
+        return
+      }
+
       const since = this.timeRange.start.toISOString()
       const until = this.timeRange.end.toISOString()
 
-      return fetch(`/api/accounts/${this.accountId}/transactions?since=${since}&until=${until}`)
-        .then(resp => resp.json())
-        .then(txs => {
-          this.transactions = txs
-          this.selectedTxRaw = {}
-        })
+      const resp = await fetch(`/api/accounts/${this.accountId}/transactions?since=${since}&until=${until}`)
+      const txs = await responseToJSON<Transaction[]>(resp)
+      this.transactions = txs ?? []
+      this.selectedTxRaw = {}
     },
 
     formatNumber,
 
-    markAccountReconciled() {
-      return fetch(`/api/accounts/${this.accountId}/reconcile`, {
+    async markAccountReconciled() {
+      await fetch(`/api/accounts/${this.accountId}/reconcile`, {
         method: 'PUT',
       })
-        .then(() => this.fetchTransactions())
+      await this.fetchTransactions()
     },
 
-    markCleared(txId, cleared) {
-      return fetch(`/api/transactions/${txId}?cleared=${cleared}`, {
+    async markCleared(txId: string, cleared: boolean) {
+      await fetch(`/api/transactions/${txId}?cleared=${cleared}`, {
         method: 'PATCH',
       })
-        .then(() => this.fetchTransactions())
+      await this.fetchTransactions()
     },
 
     moveToToday() {
@@ -585,7 +605,7 @@ export default {
       ])
     },
 
-    patchSelected(patchset = []) {
+    async patchSelected(patchset: JsonPatchOperation[] = []) {
       const actions = []
       for (const id of this.selectedTx) {
         actions.push(fetch(`/api/transactions/${id}`, {
@@ -594,48 +614,48 @@ export default {
         }))
       }
 
-      return Promise.all(actions)
-        .then(() => {
-          this.$emit('update-accounts')
-          this.fetchTransactions()
-        })
+      await Promise.all(actions)
+      this.$emit('update-accounts')
+      await this.fetchTransactions()
     },
 
-    transferMoney() {
+    async transferMoney() {
       const params = new URLSearchParams()
       params.set('amount', this.modals.createTransfer.amount.toFixed(2))
       if (this.modals.createTransfer.category) {
         params.set('category', this.modals.createTransfer.category)
       }
       if (this.modals.createTransfer.description) {
-        params.set('description', this.modals.createTransfer.description)
+        params.set('description', String(this.modals.createTransfer.description))
       }
 
-      return fetch(`/api/accounts/${this.modals.createTransfer.from}/transfer/${this.modals.createTransfer.to}?${params.toString()}`, {
+      await fetch(`/api/accounts/${this.modals.createTransfer.from}/transfer/${this.modals.createTransfer.to}?${params.toString()}`, {
         method: 'PUT',
       })
-        .then(() => {
-          this.$emit('update-accounts')
-          this.fetchTransactions()
-          Modal.getInstance(this.$refs.transferMoneyModal).toggle()
 
-          this.modals.createTransfer = {
-            amount: 0,
-            category: '',
-            from: '',
-            to: this.accountId,
-          }
-        })
+      this.$emit('update-accounts')
+      await this.fetchTransactions()
+      const modal = Modal.getInstance(this.$refs.transferMoneyModal as Element)
+      modal?.toggle()
+
+      this.modals.createTransfer = {
+        amount: 0,
+        category: '',
+        description: '',
+        from: '',
+        to: this.accountId,
+      }
     },
 
-    txSaved() {
+    async txSaved() {
       this.editedTxId = null
       this.$emit('update-accounts')
-      this.fetchTransactions()
+      await this.fetchTransactions()
     },
 
-    updateSelectAll(evt) {
-      this.selectedTxRaw = Object.fromEntries(this.transactions.map(tx => [tx.id, evt.target.checked]))
+    updateSelectAll(evt: Event) {
+      const checked = (evt.target as HTMLInputElement).checked
+      this.selectedTxRaw = Object.fromEntries(this.transactions.map(tx => [tx.id, checked]))
     },
   },
 
@@ -654,20 +674,20 @@ export default {
 
     accounts: {
       required: true,
-      type: Array,
+      type: Array as PropType<Account[]>,
     },
   },
 
   watch: {
-    accountId(to) {
+    accountId(to: string) {
       this.modals.createTransfer.to = to
-      this.fetchTransactions()
+      void this.fetchTransactions()
     },
 
     timeRange() {
-      this.fetchTransactions()
+      void this.fetchTransactions()
     },
   },
 
-}
+})
 </script>

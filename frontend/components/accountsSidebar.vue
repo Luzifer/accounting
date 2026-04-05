@@ -121,35 +121,43 @@
   </div>
 </template>
 
-<script>
-/* eslint-disable sort-imports */
+<script lang="ts">
+
+import { defineComponent, type PropType } from 'vue'
 import { Modal } from 'bootstrap'
 
 import accList from './accountsSidebarAccList.vue'
 
 import { formatNumber } from '../helpers'
+import type { Account } from '../types'
 
-export default {
+interface AddAccountForm {
+  name: string
+  startingBalance: number
+  type: 'budget' | 'category' | 'tracking'
+}
+
+export default defineComponent({
   components: { accList },
 
   computed: {
-    budgetAccounts() {
+    budgetAccounts(): Account[] {
       const accs = (this.accounts || []).filter(acc => acc.type === 'budget')
       accs.sort((a, b) => a.name.localeCompare(b.name))
       return accs
     },
 
-    budgetSum() {
+    budgetSum(): number {
       return this.budgetAccounts.reduce((sum, acc) => sum + acc.balance, 0)
     },
 
-    trackingAccounts() {
+    trackingAccounts(): Account[] {
       const accs = (this.accounts || []).filter(acc => acc.type === 'tracking')
       accs.sort((a, b) => a.name.localeCompare(b.name))
       return accs
     },
 
-    trackingSum() {
+    trackingSum(): number {
       return this.trackingAccounts.reduce((sum, acc) => sum + acc.balance, 0)
     },
   },
@@ -161,7 +169,7 @@ export default {
           name: '',
           startingBalance: 0,
           type: 'budget',
-        },
+        } as AddAccountForm,
       },
     }
   },
@@ -169,8 +177,8 @@ export default {
   emits: ['update-accounts'],
 
   methods: {
-    addAccount() {
-      return fetch('/api/accounts', {
+    async addAccount() {
+      await fetch('/api/accounts', {
         body: JSON.stringify({
           name: this.modals.addAccount.name,
           startingBalance: this.modals.addAccount.startingBalance,
@@ -181,16 +189,17 @@ export default {
         },
         method: 'POST',
       })
-        .then(() => this.$emit('update-accounts'))
-        .then(() => {
-          Modal.getInstance(this.$refs.createAccountModal).toggle()
 
-          this.modals.addAccount = {
-            name: '',
-            startingBalance: 0,
-            type: 'budget',
-          }
-        })
+      this.$emit('update-accounts')
+
+      const modal = Modal.getInstance(this.$refs.createAccountModal as Element)
+      modal?.toggle()
+
+      this.modals.addAccount = {
+        name: '',
+        startingBalance: 0,
+        type: 'budget',
+      }
     },
 
     formatNumber,
@@ -201,8 +210,8 @@ export default {
   props: {
     accounts: {
       required: true,
-      type: Array,
+      type: Array as PropType<Account[]>,
     },
   },
-}
+})
 </script>

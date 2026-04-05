@@ -24,12 +24,15 @@
   </li>
 </template>
 
-<script>
-import { classFromNumber, formatNumber } from '../helpers'
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
 
-export default {
+import { classFromNumber, formatNumber } from '../helpers'
+import type { Account } from '../types'
+
+export default defineComponent({
   computed: {
-    sum() {
+    sum(): number {
       return this.accounts.reduce((sum, acc) => sum + acc.balance, 0)
     },
   },
@@ -44,7 +47,7 @@ export default {
   props: {
     accounts: {
       required: true,
-      type: Array,
+      type: Array as PropType<Account[]>,
     },
 
     header: {
@@ -52,5 +55,5 @@ export default {
       type: String,
     },
   },
-}
+})
 </script>

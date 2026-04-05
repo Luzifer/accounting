@@ -8,11 +8,11 @@
         class="form-control form-control-sm"
         type="date"
         @keyup.esc="sendCancel"
-        @keyup.enter="$refs.payee.focus()"
+        @keyup.enter="focusRef('payee')"
       >
     </td>
     <td v-if="accountIsCategory">
-      {{ accountIdToName[edit.account] }}
+      {{ accountIdToName[edit?.account!] }}
     </td>
     <td>
       <input
@@ -21,7 +21,7 @@
         class="form-control form-control-sm"
         type="text"
         @keyup.esc="sendCancel"
-        @keyup.enter="$refs.category.focus()"
+        @keyup.enter="focusRef('category')"
       >
     </td>
     <td v-if="account.type !== 'tracking'">
@@ -30,7 +30,7 @@
         v-model="form.category"
         class="form-select form-select-sm"
         @keyup.esc="sendCancel"
-        @keyup.enter="$refs.description.focus()"
+        @keyup.enter="focusRef('description')"
       >
         <option
           v-for="cat in categories"
@@ -48,7 +48,7 @@
         class="form-control form-control-sm"
         type="text"
         @keyup.esc="sendCancel"
-        @keyup.enter="$refs.amount.focus()"
+        @keyup.enter="focusRef('amount')"
       >
     </td>
     <td>
@@ -73,20 +73,32 @@
   </tr>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
+
+import type { Account, Transaction } from '../types'
 import { responseToJSON } from '../helpers'
 
-export default {
+interface TransactionForm {
+  amount: number | string
+  category: string
+  cleared: boolean
+  date: string
+  description: string
+  payee: string
+}
+
+export default defineComponent({
   computed: {
-    accountIdToName() {
+    accountIdToName(): Record<string, string> {
       return Object.fromEntries(this.accounts.map(acc => [acc.id, acc.name]))
     },
 
-    accountIsCategory() {
+    accountIsCategory(): boolean {
       return this.account.type === 'category'
     },
 
-    categories() {
+    categories(): Account[] {
       const cats = this.accounts.filter(acc => acc.type === 'category')
       cats.sort((a, b) => a.name.localeCompare(b.name))
       return cats
@@ -104,14 +116,18 @@ export default {
 
         description: '',
         payee: '',
-      },
+      } as TransactionForm,
     }
   },
 
   emits: ['editCancelled', 'editSaved'],
 
   methods: {
-    saveTransaction() {
+    focusRef(refName: 'amount' | 'category' | 'date' | 'description' | 'payee') {
+      (this.$refs[refName] as HTMLInputElement | HTMLSelectElement | undefined)?.focus()
+    },
+
+    async saveTransaction() {
       const body = JSON.stringify({
         ...this.form,
         account: this.account.id,
@@ -123,33 +139,29 @@ export default {
         'Content-Type': 'application/json',
       }
 
-      let prom = null
+      let resp: Response
       if (this.edit?.id) {
-        prom = fetch(`/api/transactions/${this.edit.id}`, { body, headers, method: 'PUT' })
+        resp = await fetch(`/api/transactions/${this.edit.id}`, { body, headers, method: 'PUT' })
       } else {
-        prom = fetch('/api/transactions', { body, headers, method: 'POST' })
+        resp = await fetch('/api/transactions', { body, headers, method: 'POST' })
       }
 
-      return prom
-        .then(responseToJSON)
-        .then(() => {
-          this.$emit('editSaved')
-        })
-        .then(() => {
-          if (!this.edit) {
-            this.form = {
-              amount: 0,
-              category: '',
-              cleared: false,
-              date: new Date().toISOString()
-                .split('T')[0],
+      await responseToJSON(resp)
+      this.$emit('editSaved')
 
-              description: '',
-              payee: '',
-            }
-            this.$refs.date.focus()
-          }
-        })
+      if (!this.edit) {
+        this.form = {
+          amount: 0,
+          category: '',
+          cleared: false,
+          date: new Date().toISOString()
+            .split('T')[0],
+
+          description: '',
+          payee: '',
+        }
+        this.focusRef('date')
+      }
     },
 
     sendCancel() {
@@ -161,12 +173,13 @@ export default {
     if (this.edit) {
       this.form = {
         ...this.edit,
+        category: this.edit.category ?? '',
         date: new Date(this.edit.time).toISOString()
           .split('T')[0],
       }
     }
 
-    this.$refs.date.focus()
+    this.focusRef('date')
   },
 
   name: 'AccountingAppTXEditor',
@@ -174,18 +187,18 @@ export default {
   props: {
     account: {
       required: true,
-      type: Object,
+      type: Object as PropType<Account>,
     },
 
     accounts: {
       required: true,
-      type: Array,
+      type: Array as PropType<Account[]>,
     },
 
     edit: {
       default: null,
-      type: Object,
+      type: Object as PropType<Transaction | null>,
     },
   },
-}
+})
 </script>

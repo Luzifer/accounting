@@ -194,38 +194,54 @@
   </div>
 </template>
 
-<script>
-/* eslint-disable sort-imports */
+<script lang="ts">
+
+import { defineComponent, type PropType } from 'vue'
 import { Modal } from 'bootstrap'
 
 import accountEditor from './accountEditor.vue'
-import { classFromNumber, formatNumber } from '../helpers'
+import { classFromNumber, formatNumber, responseToJSON } from '../helpers'
 import rangeSelector from './rangeSelector.vue'
 import { unallocatedMoneyAcc } from '../constants'
+import type { Account, DateRange, Transaction } from '../types'
 
-export default {
+interface BudgetTransferForm {
+  amount: number
+  from: string
+  to: string
+}
+
+export default defineComponent({
   components: { accountEditor, rangeSelector },
 
   computed: {
-    activityByCategory() {
+    activityByCategory(): Record<string, number> {
       return this.transactions
         .filter(tx => tx.account)
         .reduce((alloc, tx) => {
+          if (!tx.category) {
+            return alloc
+          }
+
           alloc[tx.category] = (alloc[tx.category] || 0) + tx.amount
           return alloc
-        }, {})
+        }, {} as Record<string, number>)
     },
 
-    allocatedByCategory() {
+    allocatedByCategory(): Record<string, number> {
       return this.transactions
         .filter(tx => !tx.account)
         .reduce((alloc, tx) => {
+          if (!tx.category) {
+            return alloc
+          }
+
           alloc[tx.category] = (alloc[tx.category] || 0) + tx.amount
           return alloc
-        }, {})
+        }, {} as Record<string, number>)
     },
 
-    categories() {
+    categories(): Account[] {
       const accounts = this.accounts
         .filter(acc => acc.type === 'category')
         .filter(acc => acc.id !== unallocatedMoneyAcc)
@@ -233,14 +249,14 @@ export default {
       return accounts
     },
 
-    editedAcc() {
+    editedAcc(): Account | null {
       if (!this.editedAccId) {
         return null
       }
       return this.accounts.filter(acc => acc.id === this.editedAccId)[0] || null
     },
 
-    transferModalValid() {
+    transferModalValid(): boolean {
       if (!this.modals.createTransfer.from || !this.modals.createTransfer.to) {
         return false
       }
@@ -252,14 +268,14 @@ export default {
       return true
     },
 
-    transferableCategories() {
+    transferableCategories(): Account[] {
       const accounts = this.accounts
         .filter(acc => acc.type === 'category')
       accounts.sort((a, b) => a.name.localeCompare(b.name))
       return accounts
     },
 
-    unallocatedMoney() {
+    unallocatedMoney(): number {
       const acc = this.accounts.filter(acc => acc.id === unallocatedMoneyAcc)[0] || null
       if (acc === null) {
         return 0
@@ -267,7 +283,7 @@ export default {
       return acc.balance
     },
 
-    unallocatedMoneyClass() {
+    unallocatedMoneyClass(): string {
       const classes = ['d-inline-flex', 'flex-column', 'text-center', 'p-2', 'rounded']
       if (this.unallocatedMoney < 0) {
         classes.push('bg-danger')
@@ -283,18 +299,18 @@ export default {
 
   data() {
     return {
-      editedAccId: null,
+      editedAccId: null as null | string,
 
       modals: {
         createTransfer: {
           amount: 0,
           from: unallocatedMoneyAcc,
           to: '',
-        },
+        } as BudgetTransferForm,
       },
 
-      timeRange: {},
-      transactions: [],
+      timeRange: {} as DateRange,
+      transactions: [] as Transaction[],
     }
   },
 
@@ -303,20 +319,22 @@ export default {
   methods: {
     classFromNumber,
 
-    fetchTransactions() {
+    async fetchTransactions() {
+      if (!this.timeRange.start || !this.timeRange.end) {
+        return
+      }
+
       const since = this.timeRange.start.toISOString()
       const until = this.timeRange.end.toISOString()
 
-      return fetch(`/api/transactions?since=${since}&until=${until}`)
-        .then(resp => resp.json())
-        .then(txs => {
-          this.transactions = txs
-        })
+      const resp = await fetch(`/api/transactions?since=${since}&until=${until}`)
+      const txs = await responseToJSON<Transaction[]>(resp)
+      this.transactions = txs ?? []
     },
 
     formatNumber,
 
-    initTransfer(catId) {
+    initTransfer(catId: string) {
       const cat = this.categories.filter(cat => cat.id === catId)[0] || null
       if (!cat) {
         console.error(`init transfer from non existent category ${catId}`)
@@ -338,7 +356,7 @@ export default {
         this.modals.createTransfer.from = cat.id
       }
 
-      Modal.getOrCreateInstance(this.$refs.transferMoneyModal).toggle()
+      Modal.getOrCreateInstance(this.$refs.transferMoneyModal as Element).toggle()
     },
 
     resetTransfer() {
@@ -349,24 +367,24 @@ export default {
       }
     },
 
-    transferMoney() {
+    async transferMoney() {
       const params = new URLSearchParams()
       params.set('amount', this.modals.createTransfer.amount.toFixed(2))
 
-      return fetch(`/api/accounts/${this.modals.createTransfer.from}/transfer/${this.modals.createTransfer.to}?${params.toString()}`, {
+      await fetch(`/api/accounts/${this.modals.createTransfer.from}/transfer/${this.modals.createTransfer.to}?${params.toString()}`, {
         method: 'PUT',
       })
-        .then(() => {
-          this.$emit('update-accounts')
-          this.fetchTransactions()
-          Modal.getInstance(this.$refs.transferMoneyModal).toggle()
-        })
+
+      this.$emit('update-accounts')
+      await this.fetchTransactions()
+      const modal = Modal.getInstance(this.$refs.transferMoneyModal as Element)
+      modal?.toggle()
     },
   },
 
   mounted() {
-    this.$refs.transferMoneyModal
-      .addEventListener('hidden.bs.modal', () => this.resetTransfer())
+    const modalElement = this.$refs.transferMoneyModal as HTMLElement
+    modalElement.addEventListener('hidden.bs.modal', () => this.resetTransfer())
   },
 
   name: 'AccountingAppBudgetDashboard',
@@ -374,7 +392,7 @@ export default {
   props: {
     accounts: {
       required: true,
-      type: Array,
+      type: Array as PropType<Account[]>,
     },
   },
 
@@ -383,5 +401,5 @@ export default {
       this.fetchTransactions()
     },
   },
-}
+})
 </script>
