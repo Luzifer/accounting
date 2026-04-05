@@ -73,7 +73,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, type PropType } from 'vue'
+import { defineComponent } from 'vue'
 import { Modal } from 'bootstrap'
 
 import { responseToJSON } from '../helpers'
@@ -86,24 +86,31 @@ interface AccountEditForm {
 }
 
 export default defineComponent({
+  created() {
+    this.form = {
+      balance: this.account.balance,
+      hidden: this.account.hidden,
+      name: this.account.name,
+    }
+  },
+
   data() {
     return {
+      closeReason: 'reject' as 'reject' | 'resolve',
       form: {
         balance: 0,
         hidden: false,
         name: '',
       } as AccountEditForm,
+
+      modal: null as Modal | null,
     }
   },
 
-  emits: ['editClosed', 'editComplete'],
+  emits: ['reject', 'resolve'],
 
   methods: {
     async updateAccount() {
-      if (this.account === null) {
-        return
-      }
-
       const update = new URLSearchParams()
 
       if (this.form.name !== this.account.name) {
@@ -124,40 +131,24 @@ export default defineComponent({
       })
 
       await responseToJSON(resp)
-      this.$emit('editComplete')
+      this.closeReason = 'resolve'
+      this.modal?.hide()
     },
   },
 
   mounted() {
     const modalElement = this.$refs.editAccountModal as HTMLElement
-    modalElement.addEventListener('hidden.bs.modal', () => this.$emit('editClosed'))
+    this.modal = Modal.getOrCreateInstance(modalElement)
+    modalElement.addEventListener('hidden.bs.modal', () => this.$emit(this.closeReason))
+    this.modal.show()
   },
 
   name: 'AccountingAppAccountEditor',
 
   props: {
     account: {
-      default: null,
-      required: false,
-      type: Object as PropType<Account | null>,
-    },
-  },
-
-  watch: {
-    account(to: Account | null) {
-      const modal = Modal.getOrCreateInstance(this.$refs.editAccountModal as Element)
-      if (!to) {
-        modal.hide()
-        return
-      }
-
-      this.form = {
-        balance: to.balance,
-        hidden: to.hidden,
-        name: to.name,
-      }
-
-      modal.show()
+      required: true,
+      type: Object as () => Account,
     },
   },
 })

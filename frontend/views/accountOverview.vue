@@ -9,7 +9,7 @@
             class="text-white text-decoration-none"
             href="#"
             title="Click to Edit"
-            @click.prevent="editedAccId = accountId"
+            @click.prevent="editAccount(accountId)"
           >
             {{ accountIdToName[accountId] }}
           </a>
@@ -370,12 +370,6 @@
         </div>
       </div>
     </div>
-
-    <account-editor
-      :account="editedAcc"
-      @edit-closed="editedAccId = null"
-      @edit-complete="$emit('update-accounts'); editedAccId = null"
-    />
   </div>
 </template>
 
@@ -385,6 +379,7 @@ import { defineComponent, type PropType } from 'vue'
 import { Modal } from 'bootstrap'
 
 import accountEditor from '../components/accountEditor.vue'
+import modalHost from '../components/modal.vue'
 import { classFromNumber, formatNumber, responseToJSON } from '../helpers'
 import rangeSelector from '../components/rangeSelector.vue'
 import txEditor from '../components/txEditor.vue'
@@ -407,7 +402,7 @@ const emptyAccount: Account = {
 }
 
 export default defineComponent({
-  components: { accountEditor, rangeSelector, txEditor },
+  components: { rangeSelector, txEditor },
 
   computed: {
     account(): Account {
@@ -436,13 +431,6 @@ export default defineComponent({
       const cats = this.accounts.filter(acc => acc.type === 'category')
       cats.sort((a, b) => a.name.localeCompare(b.name))
       return cats
-    },
-
-    editedAcc(): Account | null {
-      if (!this.editedAccId) {
-        return null
-      }
-      return this.accounts.filter(acc => acc.id === this.editedAccId)[0] || null
     },
 
     selectedTx(): string[] {
@@ -502,7 +490,6 @@ export default defineComponent({
 
   data() {
     return {
-      editedAccId: null as null | string,
       editedTxId: null as null | string,
 
       modals: {
@@ -554,6 +541,20 @@ export default defineComponent({
       await Promise.all(actions)
       this.$emit('update-accounts')
       await this.fetchTransactions()
+    },
+
+    async editAccount(accountId: string) {
+      const account = this.accounts.filter(acc => acc.id === accountId)[0] || null
+      if (!account) {
+        return
+      }
+
+      try {
+        await modalHost.openModal(accountEditor, { account })
+        this.$emit('update-accounts')
+      } catch {
+        // Dismissed by user.
+      }
     },
 
     editSelected() {

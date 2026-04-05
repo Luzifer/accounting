@@ -54,7 +54,7 @@
                     class="text-white text-decoration-none"
                     href="#"
                     title="Click to Edit"
-                    @click.prevent="editedAccId = cat.id"
+                    @click.prevent="editAccount(cat.id)"
                   >
                     {{ cat.name }}
                   </a>
@@ -185,12 +185,6 @@
         </div>
       </div>
     </div>
-
-    <account-editor
-      :account="editedAcc"
-      @edit-closed="editedAccId = null"
-      @edit-complete="$emit('update-accounts'); editedAccId = null"
-    />
   </div>
 </template>
 
@@ -200,6 +194,7 @@ import { defineComponent, type PropType } from 'vue'
 import { Modal } from 'bootstrap'
 
 import accountEditor from '../components/accountEditor.vue'
+import modalHost from '../components/modal.vue'
 import { classFromNumber, formatNumber, responseToJSON } from '../helpers'
 import rangeSelector from '../components/rangeSelector.vue'
 import { unallocatedMoneyAcc } from '../constants'
@@ -212,7 +207,7 @@ interface BudgetTransferForm {
 }
 
 export default defineComponent({
-  components: { accountEditor, rangeSelector },
+  components: { rangeSelector },
 
   computed: {
     activityByCategory(): Record<string, number> {
@@ -247,13 +242,6 @@ export default defineComponent({
         .filter(acc => acc.id !== unallocatedMoneyAcc)
       accounts.sort((a, b) => a.name.localeCompare(b.name))
       return accounts
-    },
-
-    editedAcc(): Account | null {
-      if (!this.editedAccId) {
-        return null
-      }
-      return this.accounts.filter(acc => acc.id === this.editedAccId)[0] || null
     },
 
     transferModalValid(): boolean {
@@ -299,8 +287,6 @@ export default defineComponent({
 
   data() {
     return {
-      editedAccId: null as null | string,
-
       modals: {
         createTransfer: {
           amount: 0,
@@ -318,6 +304,20 @@ export default defineComponent({
 
   methods: {
     classFromNumber,
+
+    async editAccount(accountId: string) {
+      const account = this.accounts.filter(acc => acc.id === accountId)[0] || null
+      if (!account) {
+        return
+      }
+
+      try {
+        await modalHost.openModal(accountEditor, { account })
+        this.$emit('update-accounts')
+      } catch {
+        // Dismissed by user.
+      }
+    },
 
     async fetchTransactions() {
       if (!this.timeRange.start || !this.timeRange.end) {
