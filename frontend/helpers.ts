@@ -1,3 +1,16 @@
+export function classFromNumber(num: number, extraClasses: string[] = [], positiveClass: null | string = null): string {
+  const classes = extraClasses || []
+  if (num < 0) {
+    classes.push('text-danger')
+  } else if (num === 0) {
+    classes.push('text-muted')
+  } else if (positiveClass) {
+    classes.push(positiveClass)
+  }
+
+  return classes.join(' ')
+}
+
 export function formatNumber(number: number, thousandSep = ' ', decimalSep = '.', places = 2): number | string {
   if (Number.isNaN(number)) {
     return number
@@ -26,19 +39,6 @@ export function formatNumber(number: number, thousandSep = ' ', decimalSep = '.'
   }
 
   return result + decimalSep + number.toFixed(places).split('.')[1]
-}
-
-export function classFromNumber(num: number, extraClasses: string[] = [], positiveClass: null | string = null): string {
-  const classes = extraClasses || []
-  if (num < 0) {
-    classes.push('text-danger')
-  } else if (num === 0) {
-    classes.push('text-muted')
-  } else if (positiveClass) {
-    classes.push(positiveClass)
-  }
-
-  return classes.join(' ')
 }
 
 export function responseToJSON<T>(resp: Response): Promise<null | T> {
