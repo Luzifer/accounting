@@ -100,5 +100,5 @@ func (apiServer) jsonResponse(w http.ResponseWriter, status int, data any) {
 	}
 
 	w.WriteHeader(status)
-	body.WriteTo(w) //nolint:errcheck,gosec,revive
+	body.WriteTo(w) //nolint:errcheck,gosec
 }
