@@ -206,7 +206,7 @@ export default defineComponent({
         return
       }
 
-      let initialFrom = ''
+      let initialFrom
       let initialTo = ''
 
       if (cat.balance <= 0) {
