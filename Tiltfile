@@ -1,7 +1,7 @@
 # Install Node deps on change of package.json
 local_resource(
-  'npm',
-  cmd='npm i --include=dev', # Not using the make target to edit the lockfile
+  'pnpm',
+  cmd='pnpm i', # Not using the make target to edit the lockfile
   deps=['package.json'],
 )
 
@@ -10,7 +10,7 @@ local_resource(
   'frontend',
   cmd='make frontend',
   deps=['frontend'],
-  resource_deps=['npm'],
+  resource_deps=['pnpm'],
 )
 
 # Update go.sum file and ensure modules are available

@@ -12,10 +12,10 @@ build:
 .PHONY: frontend
 frontend: node_modules
 	git clean -fdx pkg/frontend/assets/
-	node ci/build.mjs
+	pnpm node ci/build.mjs
 
 node_modules:
-	npm ci --include=dev
+	pnpm i --frozen-lockfile
 
 publish: frontend
 	bash ci/build.sh

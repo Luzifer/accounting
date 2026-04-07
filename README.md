@@ -32,12 +32,12 @@ In short: Maybe. Longer version: This software started as a system to do **my** 
 
 ## How to run it?
 
-For local testing just clone the repo, ensure you got a fairly new `nodejs` (including NPM) and `go` toolchain installed and
+For local testing just clone the repo, ensure you got `tilt`, a fairly new `nodejs` (including PNPM) and `go` toolchain installed and
 
 ```console
-# make run
+# tilt up
 ```
 
-then go to http://localhost:5000/ and try it.
+then go to http://localhost:59813/ and try it.
 
 To really host it, `make build` it, put it on your server and let it run. (It's a binary so probably use systemd to run it and an nginx as proxy in front of it doing auth-stuff…)
