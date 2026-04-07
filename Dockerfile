@@ -13,20 +13,17 @@ RUN set -ex \
  && make frontend build
 
 
-FROM alpine:3.23@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659
+FROM scratch
 
-LABEL maintainer="Knut Ahlers <knut@ahlers.me>"
+LABEL org.opencontainers.image.authors='Knut Ahlers <knut@ahlers.me>' \
+      org.opencontainers.image.url='https://github.com/Luzifer/accounting/pkgs/container/accounting' \
+      org.opencontainers.image.documentation='https://github.com/Luzifer/accounting' \
+      org.opencontainers.image.source='https://github.com/Luzifer/accounting' \
+      org.opencontainers.image.licenses='Apache-2.0'
 
-RUN set -ex \
- && apk --no-cache add \
-      ca-certificates
-
-COPY --from=builder /go/src/accounting/accounting /usr/local/bin/accounting
+COPY --from=builder /go/src/accounting/accounting /usr/bin/accounting
 
 EXPOSE 3000
-USER 1000
+USER 1000:1000
 
-ENTRYPOINT ["/usr/local/bin/accounting"]
-CMD ["--"]
-
-# vim: set ft=Dockerfile:
+ENTRYPOINT ["/usr/bin/accounting"]
