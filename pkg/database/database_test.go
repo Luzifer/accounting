@@ -30,7 +30,7 @@ func TestAccountManagement(t *testing.T) {
 
 	// Create account for testing and validate ID
 	act, err := dbc.CreateAccount("test", AccountTypeBudget)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotEqual(t, uuid.Nil, act.ID)
 
 	// Store ID
@@ -38,41 +38,41 @@ func TestAccountManagement(t *testing.T) {
 
 	// Fetch account by ID
 	act, err = dbc.GetAccount(actID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, actID, act.ID)
 	assert.Equal(t, "test", act.Name)
 
 	// List all accounts
 	accs, err := dbc.ListAccounts(false)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, accs, 2)
 
 	// Hide account and list again
-	assert.NoError(t, dbc.UpdateAccountHidden(actID, true))
+	require.NoError(t, dbc.UpdateAccountHidden(actID, true))
 	accs, err = dbc.ListAccounts(false)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, accs, 1)
 
 	// Unhide account and list again
-	assert.NoError(t, dbc.UpdateAccountHidden(actID, false))
+	require.NoError(t, dbc.UpdateAccountHidden(actID, false))
 	accs, err = dbc.ListAccounts(false)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, accs, 2)
 
 	// List accounts from other type
 	accs, err = dbc.ListAccountsByType(AccountTypeCategory, false)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, accs, 1)
 
 	// List accounts from existing type
 	accs, err = dbc.ListAccountsByType(AccountTypeBudget, false)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, accs, 1)
 
 	// Rename account
-	assert.NoError(t, dbc.UpdateAccountName(actID, "renamed"))
+	require.NoError(t, dbc.UpdateAccountName(actID, "renamed"))
 	act, err = dbc.GetAccount(actID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, actID, act.ID)
 	assert.Equal(t, "renamed", act.Name)
 }
@@ -114,7 +114,7 @@ func TestPairKeyRemoval(t *testing.T) {
 	testCheckAcctBal(t, bals, tb2.ID, 0)
 }
 
-//nolint:funlen
+//nolint:funlen // single flow of transactions
 func TestTransactions(t *testing.T) {
 	dbc, err := New("sqlite", testDSN)
 	require.NoError(t, err)
@@ -264,9 +264,11 @@ func TestTransactions(t *testing.T) {
 }
 
 func testCheckAcctBal(t *testing.T, bals []AccountBalance, act uuid.UUID, bal float64) {
+	t.Helper()
+
 	for _, b := range bals {
 		if b.ID == act {
-			assert.Equal(t, bal, b.Balance)
+			assert.InDelta(t, bal, b.Balance, 0)
 			return
 		}
 	}

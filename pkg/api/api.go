@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"git.luzifer.io/luzifer/accounting/pkg/database"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+
+	"git.luzifer.io/luzifer/accounting/pkg/database"
 )
 
 type (
@@ -100,5 +101,5 @@ func (apiServer) jsonResponse(w http.ResponseWriter, status int, data any) {
 	}
 
 	w.WriteHeader(status)
-	body.WriteTo(w) //nolint:errcheck,gosec
+	_, _ = body.WriteTo(w)
 }

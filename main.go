@@ -1,19 +1,20 @@
+// Accounting Software
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"time"
 
+	httphelper "github.com/Luzifer/go_helpers/http"
+	"github.com/Luzifer/rconfig/v2"
+	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
+
 	"git.luzifer.io/luzifer/accounting/pkg/api"
 	"git.luzifer.io/luzifer/accounting/pkg/database"
 	"git.luzifer.io/luzifer/accounting/pkg/frontend"
-	"github.com/gorilla/mux"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
-	httpHelper "github.com/Luzifer/go_helpers/http"
-	"github.com/Luzifer/rconfig/v2"
 )
 
 var (
@@ -31,12 +32,12 @@ var (
 func initApp() error {
 	rconfig.AutoEnv(true)
 	if err := rconfig.ParseAndValidate(&cfg); err != nil {
-		return errors.Wrap(err, "parsing cli options")
+		return fmt.Errorf("parsing cli options: %w", err)
 	}
 
 	l, err := logrus.ParseLevel(cfg.LogLevel)
 	if err != nil {
-		return errors.Wrap(err, "parsing log-level")
+		return fmt.Errorf("parsing log-level: %w", err)
 	}
 	logrus.SetLevel(l)
 
@@ -64,8 +65,8 @@ func main() {
 	frontend.RegisterHandler(router, logrus.StandardLogger())
 
 	var hdl http.Handler = router
-	hdl = httpHelper.GzipHandler(hdl)
-	hdl = httpHelper.NewHTTPLogHandlerWithLogger(hdl, logrus.StandardLogger())
+	hdl = httphelper.GzipHandler(hdl)
+	hdl = httphelper.NewHTTPLogHandlerWithLogger(hdl, logrus.StandardLogger())
 
 	server := &http.Server{
 		Addr:              cfg.Listen,

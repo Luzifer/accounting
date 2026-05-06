@@ -187,7 +187,7 @@ func (c *Client) ListAccountBalances(showHidden bool) (a []AccountBalance, err e
 
 			if v != nil {
 				// Fix database doing e-15 stuff by rounding to full cents
-				ab.Balance = math.Round(*v*100) / 100 //nolint:mnd
+				ab.Balance = math.Round(*v*100) / 100 //revive:disable-line:add-constant // clear from code
 			}
 
 			a = append(a, ab)
@@ -202,7 +202,7 @@ func (c *Client) ListAccountBalances(showHidden bool) (a []AccountBalance, err e
 
 // ListAccounts returns a list of all accounts
 //
-//revive:disable-next-line:flag-parameter
+//revive:disable-next-line:flag-parameter // not a behavior switch but a filter
 func (c *Client) ListAccounts(showHidden bool) (a []Account, err error) {
 	if err = c.retryRead(func(db *gorm.DB) error {
 		q := db.Model(&Account{})
@@ -221,7 +221,7 @@ func (c *Client) ListAccounts(showHidden bool) (a []Account, err error) {
 
 // ListAccountsByType returns a list of all accounts of the given type
 //
-//revive:disable-next-line:flag-parameter
+//revive:disable-next-line:flag-parameter // not a behavior switch but a filter
 func (c *Client) ListAccountsByType(at AccountType, showHidden bool) (a []Account, err error) {
 	if err = c.retryRead(func(db *gorm.DB) error {
 		q := db.Where("type = ?", at)
@@ -559,7 +559,7 @@ func (c *Client) UpdateTransactionCleared(id uuid.UUID, cleared bool) (err error
 }
 
 func (c *Client) retryRead(fn func(db *gorm.DB) error) error {
-	//nolint:wrapcheck
+	//nolint:wrapcheck // inner error is from this lib and shall not be tainted
 	return backoff.NewBackoff().
 		WithMaxIterations(dbMaxRetries).
 		Retry(func() error {
@@ -572,7 +572,7 @@ func (c *Client) retryRead(fn func(db *gorm.DB) error) error {
 }
 
 func (c *Client) retryTx(fn func(db *gorm.DB) error) error {
-	//nolint:wrapcheck
+	//nolint:wrapcheck // inner error is from this lib and shall not be tainted
 	return backoff.NewBackoff().
 		WithMaxIterations(dbMaxRetries).
 		Retry(func() error {

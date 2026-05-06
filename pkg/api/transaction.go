@@ -8,11 +8,12 @@ import (
 	"net/http"
 	"time"
 
-	"git.luzifer.io/luzifer/accounting/pkg/database"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	jsonpatch "gopkg.in/evanphx/json-patch.v5"
 	"gorm.io/gorm"
+
+	"git.luzifer.io/luzifer/accounting/pkg/database"
 )
 
 func (a apiServer) handleCreateTransaction(w http.ResponseWriter, r *http.Request) {
@@ -196,7 +197,7 @@ func (a apiServer) handleTransactionJSONPatch(txID uuid.UUID, w http.ResponseWri
 		return
 	}
 
-	if reqBody.Len() < 2 { //nolint:mnd
+	if reqBody.Len() < 2 {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}

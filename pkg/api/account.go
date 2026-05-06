@@ -7,10 +7,11 @@ import (
 	"strconv"
 	"time"
 
-	"git.luzifer.io/luzifer/accounting/pkg/database"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
+
+	"git.luzifer.io/luzifer/accounting/pkg/database"
 )
 
 func (a apiServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) {

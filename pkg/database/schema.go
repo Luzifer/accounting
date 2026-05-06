@@ -3,10 +3,18 @@ package database
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+)
+
+// Known values of the AccountType enum
+const (
+	AccountTypeBudget   AccountType = "budget"
+	AccountTypeCategory AccountType = "category"
+	AccountTypeTracking AccountType = "tracking"
 )
 
 type (
@@ -53,27 +61,14 @@ type (
 	}
 )
 
-// Known values of the AccountType enum
-const (
-	AccountTypeBudget   AccountType = "budget"
-	AccountTypeCategory AccountType = "category"
-	AccountTypeTracking AccountType = "tracking"
-)
-
 // IsValid checks whether the given AccountType belongs to the known
 // types
 func (a AccountType) IsValid() bool {
-	for _, kat := range []AccountType{
+	return slices.Contains([]AccountType{
 		AccountTypeBudget,
 		AccountTypeCategory,
 		AccountTypeTracking,
-	} {
-		if kat == a {
-			return true
-		}
-	}
-
-	return false
+	}, a)
 }
 
 // BeforeCreate ensures the object UUID is filled
@@ -84,7 +79,7 @@ func (b *BaseModel) BeforeCreate(*gorm.DB) (err error) {
 
 // Validate executes some basic checks on the transaction
 //
-//nolint:gocyclo
+//nolint:gocyclo // simple validation rules
 func (t Transaction) Validate(c *Client) (err error) {
 	var errs []error
 

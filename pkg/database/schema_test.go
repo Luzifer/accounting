@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,7 +18,7 @@ func TestTransactionValidateErrs(t *testing.T) {
 	actT, err := dbc.CreateAccount("test", AccountTypeTracking)
 	require.NoError(t, err)
 
-	assert.Error(t, Transaction{
+	require.Error(t, Transaction{
 		Time:        time.Time{}, // ERR: Zero time
 		Payee:       "test",
 		Description: "test",
@@ -29,7 +28,7 @@ func TestTransactionValidateErrs(t *testing.T) {
 		Cleared:     false,
 	}.Validate(dbc))
 
-	assert.Error(t, Transaction{
+	require.Error(t, Transaction{
 		Time:        time.Now(),
 		Payee:       "test",
 		Description: "test",
@@ -38,7 +37,7 @@ func TestTransactionValidateErrs(t *testing.T) {
 		Category:    uuid.NullUUID{}, // ERR: Both null
 	}.Validate(dbc))
 
-	assert.Error(t, Transaction{
+	require.Error(t, Transaction{
 		Time:        time.Now(),
 		Payee:       "test",
 		Description: "test",
@@ -47,7 +46,7 @@ func TestTransactionValidateErrs(t *testing.T) {
 		Category:    uuid.NullUUID{UUID: UnallocatedMoney, Valid: true},
 	}.Validate(dbc))
 
-	assert.Error(t, Transaction{
+	require.Error(t, Transaction{
 		Time:        time.Now(),
 		Payee:       "test",
 		Description: "test",
@@ -56,7 +55,7 @@ func TestTransactionValidateErrs(t *testing.T) {
 		Category:    uuid.NullUUID{}, // ERR: Budget without cat
 	}.Validate(dbc))
 
-	assert.Error(t, Transaction{
+	require.Error(t, Transaction{
 		Time:        time.Now(),
 		Payee:       "test",
 		Description: "test",
@@ -65,7 +64,7 @@ func TestTransactionValidateErrs(t *testing.T) {
 		Category:    uuid.NullUUID{UUID: UnallocatedMoney, Valid: true}, // ERR: Tracking with cat
 	}.Validate(dbc))
 
-	assert.Error(t, Transaction{
+	require.Error(t, Transaction{
 		Time:        time.Now(),
 		Payee:       "test",
 		Description: "test",
@@ -74,7 +73,7 @@ func TestTransactionValidateErrs(t *testing.T) {
 		Category:    uuid.NullUUID{UUID: actT.ID, Valid: true}, // ERR: Cat is not cat
 	}.Validate(dbc))
 
-	assert.Error(t, Transaction{
+	require.Error(t, Transaction{
 		Time:        time.Now(),
 		Payee:       "test",
 		Description: "test",
@@ -83,7 +82,7 @@ func TestTransactionValidateErrs(t *testing.T) {
 		Category:    uuid.NullUUID{UUID: UnallocatedMoney, Valid: true},
 	}.Validate(dbc))
 
-	assert.Error(t, Transaction{
+	require.Error(t, Transaction{
 		Time:        time.Now(),
 		Payee:       "test",
 		Description: "test",

@@ -10,5 +10,5 @@ type (
 )
 
 func (l loggerWriter) Printf(format string, data ...any) {
-	fmt.Fprintf(l.Writer, format, data...) //nolint:errcheck
+	_, _ = fmt.Fprintf(l.Writer, format, data...)
 }
