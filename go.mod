@@ -7,7 +7,7 @@ toolchain go1.26.2
 require (
 	github.com/Luzifer/go_helpers/backoff v0.5.2
 	github.com/Luzifer/go_helpers/http v0.12.4
-	github.com/Luzifer/rconfig/v2 v2.6.1
+	github.com/Luzifer/rconfig/v2 v2.6.2
 	github.com/glebarez/sqlite v1.11.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
