@@ -15,7 +15,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	gopkg.in/evanphx/json-patch.v5 v5.9.11
 	gorm.io/driver/postgres v1.6.0
-	gorm.io/gorm v1.31.1
+	gorm.io/gorm v1.31.2
 )
 
 require (
