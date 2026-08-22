@@ -11,7 +11,7 @@ require (
 	github.com/glebarez/sqlite v1.11.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
-	github.com/sirupsen/logrus v1.10.0
+	github.com/sirupsen/logrus v1.10.1
 	github.com/stretchr/testify v1.12.1
 	gopkg.in/evanphx/json-patch.v5 v5.9.11
 	gorm.io/driver/postgres v1.6.2
